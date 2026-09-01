@@ -1,0 +1,19 @@
+# Cache del catalogo ImpoHogar
+# Nota: solo aplica si el hosting respeta este archivo (estilo Netlify).
+
+# stock.js cambia seguido: siempre revalidar
+/js/stock.js
+  Cache-Control: no-cache
+
+# El resto del codigo y los estilos llevan ?v= en el index.html
+/js/*
+  Cache-Control: public, max-age=604800
+/css/*
+  Cache-Control: public, max-age=604800
+
+# Las fotos llevan ?v=IMG_VERSION
+/img/*
+  Cache-Control: public, max-age=31536000
+
+/index.html
+  Cache-Control: no-cache
