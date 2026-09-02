@@ -199,16 +199,14 @@ function renderPage(reset) {
     loadMoreBtn.textContent = `Cargar más (${filteredProducts.length - renderedCount} restantes)`;
   }
 
-  // Si el cliente esta buscando algo puntual y el resultado esta agotado
-  // pero tiene un dupe/inspiracion cargado, se lo mostramos ya abierto,
-  // sin que tenga que tocar el boton. Fuera de una busqueda (navegando
-  // el catalogo normal) el panel se queda como siempre: cerrado hasta
-  // que el cliente lo abre.
+  // Si el cliente esta buscando algo puntual y ese producto tiene un
+  // dupe/inspiracion cargado, se lo mostramos ya abierto, sin que tenga
+  // que tocar el boton (tenga o no tenga stock). Fuera de una busqueda
+  // (navegando el catalogo normal) el panel se queda como siempre:
+  // cerrado hasta que el cliente lo abre.
   const searchQuery = document.getElementById('search').value.trim();
   if (searchQuery && typeof getRelatedProducts === 'function') {
     nextBatch.forEach(p => {
-      const stockNum = parseInt(p.stock) || 0;
-      if (stockNum > 0) return;
       if (!getRelatedProducts(p.id).length) return;
       const panel = document.getElementById('dupe-panel-' + p.id);
       if (panel) panel.classList.add('open');
