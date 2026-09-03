@@ -7,7 +7,26 @@
 
 // Sube esta fecha cada vez que reemplaces fotos de la carpeta img/,
 // para que el navegador de los clientes no sirva la imagen vieja.
-const IMG_VERSION = "20260828";
+const IMG_VERSION = "20260904";
+
+// Marcas que aparecen en el carrusel animado de arriba del catalogo
+// (reemplaza al aviso de "fotos cargadas / agotados"). Cada logo debe
+// estar guardado en img/marcas/<archivo>. Para agregar o quitar una
+// marca, solo hay que editar esta lista -- no hace falta tocar main.js.
+const MARCAS_CARRUSEL = [
+  { nombre: "Jean Paul Gaultier", archivo: "jeanpaulgaultier.png" },
+  { nombre: "Nautica", archivo: "nautica.png" },
+  { nombre: "Hugo Boss", archivo: "hugoboss.png" },
+  { nombre: "Moschino", archivo: "moschino.png" },
+  { nombre: "Versace", archivo: "versace.png" },
+  { nombre: "Calvin Klein", archivo: "calvinklein.png" },
+  { nombre: "Carolina Herrera", archivo: "carolinaherrera.png" },
+  { nombre: "Paco Rabanne", archivo: "pacorabanne.png" },
+  { nombre: "Armaf", archivo: "armaf.png" },
+  { nombre: "Afnan", archivo: "afnan.png" },
+  { nombre: "Dolce & Gabbana", archivo: "dolcegabbana.png" },
+  { nombre: "Bharara", archivo: "bharara.png" }
+];
 
 // Un producto aparece en "Nuevos Ingresos" mientras su dateAdded este
 // dentro de los ultimos NEW_PRODUCT_DAYS dias.

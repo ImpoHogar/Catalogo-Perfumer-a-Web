@@ -4,6 +4,24 @@
 //  Se ejecuta cuando la pagina termina de cargar y conecta todo.
 // ============================================================
 
+// ============================================================
+//  CARRUSEL DE MARCAS
+// ============================================================
+//  Arma el carrusel infinito de logos que reemplaza al aviso de
+//  fotos/agotados. La lista de marcas viene de MARCAS_CARRUSEL
+//  (definida en config.js). Cada logo se busca en img/marcas/.
+//  Se duplica la fila completa una vez para que el loop de la
+//  animacion (en css/styles.css) no muestre ningun corte.
+// ============================================================
+function renderBrandMarquee() {
+  const track = document.getElementById('brandMarqueeTrack');
+  if (!track || typeof MARCAS_CARRUSEL === 'undefined') return;
+  const logosHTML = MARCAS_CARRUSEL.map(m =>
+    `<img src="img/marcas/${m.archivo}?v=${IMG_VERSION}" alt="${m.nombre}" class="brand-logo-item">`
+  ).join('');
+  track.innerHTML = logosHTML + logosHTML;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   try {
     initTheme();
@@ -17,13 +35,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const totalCount = VISIBLE_PRODUCTS.length;
     const missingPhotos = VISIBLE_PRODUCTS.filter(p => !p.img).length;
     const agotados = VISIBLE_PRODUCTS.filter(p => (parseInt(p.stock) || 0) <= 0).length;
-    const noticeEl = document.getElementById('photoNotice');
-    if (missingPhotos > 0 || agotados > 0) {
-      noticeEl.textContent = `Fotos cargadas: ${totalCount - missingPhotos} de ${totalCount} productos. Los productos sin foto muestran un ícono de referencia (nombre de marca) hasta que se agregue su foto real. ${agotados} productos están sin stock y aparecen marcados como AGOTADO.`;
-      noticeEl.style.display = 'block';
-    } else {
-      noticeEl.style.display = 'none';
-    }
+    renderBrandMarquee();
     document.getElementById('search').addEventListener('input', applyFilters);
     document.getElementById('brandFilter').addEventListener('change', () => { diaNinoMode = false; document.getElementById('diaNinoBanner').style.display = 'none'; applyFilters(); });
     document.getElementById('loadMoreBtn').addEventListener('click', () => renderPage(false));

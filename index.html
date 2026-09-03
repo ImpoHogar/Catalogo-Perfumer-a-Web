@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Catálogo de Pedido</title>
-<link rel="stylesheet" href="css/styles.css?v=20260902e">
+<link rel="stylesheet" href="css/styles.css?v=20260904">
 </head>
 <body>
 <noscript>
@@ -51,7 +51,9 @@
   <button id="historyBtn" class="review-btn" onclick="openOrderHistory()">📋 Historial de pedidos</button>
 </div>
 <div class="badge-count" id="count"></div>
-<div class="notice" id="photoNotice">Aviso de fotos pendientes.</div>
+<div class="brand-marquee" id="brandMarquee" aria-hidden="true">
+  <div class="brand-marquee-track" id="brandMarqueeTrack"></div>
+</div>
 <div class="dia-nino-banner" id="diaNinoBanner" style="display:none;">🎈 Estás viendo la sección Día del Niño 🎈 &nbsp; <button type="button" class="review-btn" onclick="exitDiaDelNino()">Ver todos los productos</button></div>
 <div class="nuevos-ingresos-banner" id="nuevosIngresosBanner" style="display:none;">🆕 Estás viendo Nuevos Ingresos 🆕 &nbsp; <button type="button" class="review-btn" onclick="exitNuevosIngresos()">Ver todos los productos</button></div>
 <div class="grid" id="grid"></div>
@@ -258,21 +260,21 @@
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.12.3/JsBarcode.all.min.js"></script>
 
 <!-- El ORDEN de estos archivos importa: no los reordenes. -->
-<script defer src="js/config.js?v=20260902e"></script>
-<script defer src="js/products.js?v=20260902e"></script>
-<script defer src="js/stock.js?v=20260902e"></script>
-<script defer src="js/data.js?v=20260902e"></script>
-<script defer src="js/utils.js?v=20260902e"></script>
-<script defer src="js/dupes.js?v=20260902e"></script>
-<script defer src="js/catalog.js?v=20260902e"></script>
-<script defer src="js/cart.js?v=20260902e"></script>
-<script defer src="js/theme.js?v=20260902e"></script>
-<script defer src="js/order.js?v=20260902e"></script>
-<script defer src="js/history.js?v=20260902e"></script>
-<script defer src="js/calculator.js?v=20260902e"></script>
-<script defer src="js/lightbox.js?v=20260902e"></script>
-<script defer src="js/gate.js?v=20260902e"></script>
-<script defer src="js/feedback.js?v=20260902e"></script>
-<script defer src="js/main.js?v=20260902e"></script>
+<script defer src="js/config.js?v=20260904"></script>
+<script defer src="js/products.js?v=20260904"></script>
+<script defer src="js/stock.js?v=20260904"></script>
+<script defer src="js/data.js?v=20260904"></script>
+<script defer src="js/utils.js?v=20260904"></script>
+<script defer src="js/dupes.js?v=20260904"></script>
+<script defer src="js/catalog.js?v=20260904"></script>
+<script defer src="js/cart.js?v=20260904"></script>
+<script defer src="js/theme.js?v=20260904"></script>
+<script defer src="js/order.js?v=20260904"></script>
+<script defer src="js/history.js?v=20260904"></script>
+<script defer src="js/calculator.js?v=20260904"></script>
+<script defer src="js/lightbox.js?v=20260904"></script>
+<script defer src="js/gate.js?v=20260904"></script>
+<script defer src="js/feedback.js?v=20260904"></script>
+<script defer src="js/main.js?v=20260904"></script>
 </body>
 </html>

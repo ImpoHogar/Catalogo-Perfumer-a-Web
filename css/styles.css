@@ -36,6 +36,15 @@ select { padding:10px 14px; border-radius:20px; border:1px solid var(--border); 
 .filter-dropdown-clear:hover { text-decoration:underline; }
 .badge-count { text-align:center; color:var(--muted); font-size:12px; margin: 8px 0 2px; }
 .notice { max-width:900px; margin:0 auto 10px; padding:10px 16px; background:var(--celeste-light); border:1px solid var(--celeste); color:var(--navy); border-radius:10px; font-size:12.5px; text-align:center; }
+
+/* Carrusel de logos de marcas (reemplaza al aviso de fotos/agotados) */
+.brand-marquee { width:100%; overflow:hidden; padding:14px 0; margin:0 0 10px; background:var(--surface); border-top:1px solid var(--border); border-bottom:1px solid var(--border); }
+.brand-marquee-track { display:flex; align-items:center; gap:56px; width:max-content; animation: brand-marquee-scroll 28s linear infinite; }
+.brand-logo-item { height:40px; width:auto; object-fit:contain; flex-shrink:0; }
+@keyframes brand-marquee-scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+@media (prefers-reduced-motion: reduce) { .brand-marquee-track { animation: none; } }
+@media (max-width: 700px) { .brand-logo-item { height:30px; } .brand-marquee-track { gap:36px; } }
+body.dark .brand-logo-item { filter: brightness(0) invert(1); }
 .grid { display:grid; grid-template-columns: repeat(5, 1fr); gap:16px; padding: 16px; max-width:1700px; margin:0 auto; }
 @media (max-width: 1100px) { .grid { grid-template-columns: repeat(3, 1fr); } }
 @media (max-width: 700px) { .grid { grid-template-columns: repeat(2, 1fr); } }
