@@ -35,11 +35,12 @@ function renderBrandFilter() {
 // ============================================================
 //  FILTRO DE CATEGORIA (tipo + genero combinados)
 // ============================================================
-const TIPO_GENERO_OPTIONS = ['Splash/Bodymist', 'Hombre', 'Mujer', 'Niños', 'Unisex', 'Mascota'];
+const TIPO_GENERO_OPTIONS = ['Estuches', 'Splash/Bodymist', 'Hombre', 'Mujer', 'Niños', 'Unisex', 'Mascota'];
 
 let selectedTipoGenero = new Set();
 
 function getTipoGeneroBucket(p) {
+  if (p.tipo === 'Estuche') return 'Estuches';
   if (p.tipo === 'Splash/Bodymist') return 'Splash/Bodymist';
   if (p.genero === 'Niños' || p.tipo === 'Niños') return 'Niños';
   if (p.genero === 'Hombre') return 'Hombre';
