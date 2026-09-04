@@ -76,7 +76,14 @@ function renderTipoGeneroFilter() {
 }
 
 function toggleTipoGenero(opt) {
-  if (selectedTipoGenero.has(opt)) selectedTipoGenero.delete(opt); else selectedTipoGenero.add(opt);
+  // Seleccion UNICA: elegir una categoria nueva reemplaza a la anterior.
+  // Click de nuevo sobre la misma categoria activa la deselecciona.
+  if (selectedTipoGenero.has(opt)) {
+    selectedTipoGenero.delete(opt);
+  } else {
+    selectedTipoGenero.clear();
+    selectedTipoGenero.add(opt);
+  }
   diaNinoMode = false;
   document.getElementById('diaNinoBanner').style.display = 'none';
   nuevosIngresosMode = false;
