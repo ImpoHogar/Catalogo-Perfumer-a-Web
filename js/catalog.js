@@ -51,63 +51,45 @@ function getTipoGeneroBucket(p) {
 }
 
 function renderTipoGeneroFilter() {
-  const panel = document.getElementById('tipoGeneroPanel');
+  const wrap = document.getElementById('categoryTiles');
+  if (!wrap) return;
   const counts = {};
   TIPO_GENERO_OPTIONS.forEach(o => counts[o] = 0);
   VISIBLE_PRODUCTS.forEach(p => {
     const b = getTipoGeneroBucket(p);
     if (b) counts[b]++;
   });
-  panel.innerHTML = TIPO_GENERO_OPTIONS.map(opt => `
-    <label class="filter-dropdown-option">
-      <input type="checkbox" value="${opt}" onchange="toggleTipoGenero('${opt}', this.checked)">
-      <span>${opt}</span>
-      <span class="count">${counts[opt]}</span>
-    </label>`).join('') + `
-    <div class="filter-dropdown-footer">
-      <button type="button" class="filter-dropdown-clear" onclick="clearTipoGenero()">Limpiar selección</button>
-    </div>`;
+  const iconos = (typeof CATEGORIA_ICONOS !== 'undefined') ? CATEGORIA_ICONOS : {};
+  wrap.innerHTML = TIPO_GENERO_OPTIONS.map(opt => {
+    const activa = selectedTipoGenero.has(opt);
+    const archivoIcono = iconos[opt];
+    const iconoHTML = archivoIcono
+      ? `<img src="img/categorias/${archivoIcono}?v=${IMG_VERSION}" alt="" class="category-tile-icon">`
+      : '';
+    return `
+    <button type="button" class="category-tile${activa ? ' active' : ''}" onclick="toggleTipoGenero('${opt}')" aria-pressed="${activa}">
+      ${iconoHTML}
+      <span class="category-tile-label">${opt}</span>
+      <span class="category-tile-count">${counts[opt]}</span>
+    </button>`;
+  }).join('');
 }
 
-function toggleTipoGenero(opt, checked) {
-  if (checked) selectedTipoGenero.add(opt); else selectedTipoGenero.delete(opt);
-  updateTipoGeneroBtnLabel();
+function toggleTipoGenero(opt) {
+  if (selectedTipoGenero.has(opt)) selectedTipoGenero.delete(opt); else selectedTipoGenero.add(opt);
   diaNinoMode = false;
   document.getElementById('diaNinoBanner').style.display = 'none';
   nuevosIngresosMode = false;
   document.getElementById('nuevosIngresosBanner').style.display = 'none';
+  renderTipoGeneroFilter();
   applyFilters();
 }
 
 function clearTipoGenero() {
   selectedTipoGenero.clear();
-  document.querySelectorAll('#tipoGeneroPanel input[type=checkbox]').forEach(cb => cb.checked = false);
-  updateTipoGeneroBtnLabel();
+  renderTipoGeneroFilter();
   applyFilters();
 }
-
-function updateTipoGeneroBtnLabel() {
-  const label = document.getElementById('tipoGeneroLabel');
-  label.textContent = selectedTipoGenero.size ? `Categoría (${selectedTipoGenero.size})` : 'Categoría';
-}
-
-function toggleTipoGeneroPanel(evt) {
-  if (evt) evt.stopPropagation();
-  const panel = document.getElementById('tipoGeneroPanel');
-  const icon = document.getElementById('tipoGeneroIcon');
-  const isOpen = panel.style.display !== 'none';
-  panel.style.display = isOpen ? 'none' : 'block';
-  icon.textContent = isOpen ? '+' : '−';
-}
-
-document.addEventListener('click', (e) => {
-  const wrap = document.getElementById('tipoGeneroFilter');
-  if (!wrap) return;
-  if (!wrap.contains(e.target)) {
-    document.getElementById('tipoGeneroPanel').style.display = 'none';
-    document.getElementById('tipoGeneroIcon').textContent = '+';
-  }
-});
 
 function cardHTML(p) {
   const safeName = escapeHtml(p.name);

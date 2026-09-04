@@ -59,3 +59,17 @@ const SELLERS = {
 // URL de despliegue del Google Apps Script que recibe los mensajes
 // del formulario de feedback (con fotos adjuntas).
 const FEEDBACK_URL = "https://script.google.com/macros/s/AKfycbz8t35NnwV7paVbsrYBPvODUNDDNGiltQgvvjLjFGLW8XjV7-51Fozt6aN5F4N9-SPt/exec";
+
+// Iconos de la fila de tarjetas de categoria (arriba del catalogo).
+// Cada icono debe estar guardado en img/categorias/<archivo>. Si una
+// categoria no tiene entrada aca, la tarjeta se muestra sin icono
+// (solo texto), sin romper nada.
+const CATEGORIA_ICONOS = {
+  "Estuches": "estuches.png",
+  "Hombre": "hombre.png",
+  "Mujer": "mujer.png",
+  "Niños": "ninos.png",
+  "Splash/Bodymist": "splash.png",
+  "Unisex": "unisex.png",
+  "Mascota": "mascota.png"
+};
