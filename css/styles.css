@@ -35,6 +35,17 @@ select { padding:10px 14px; border-radius:20px; border:1px solid var(--border); 
 .filter-dropdown-clear { background:none; border:none; color:var(--celeste); font-size:12px; cursor:pointer; padding:0; }
 .filter-dropdown-clear:hover { text-decoration:underline; }
 .badge-count { text-align:center; color:var(--muted); font-size:12px; margin: 8px 0 2px; }
+
+/* Fila de tarjetas de categoria (reemplaza al dropdown "CATEGORIA +") */
+.category-tiles { display:flex; gap:10px; justify-content:center; flex-wrap:nowrap; overflow-x:auto; padding:12px 16px 4px; -webkit-overflow-scrolling:touch; }
+.category-tile { display:flex; flex-direction:column; align-items:center; gap:4px; flex-shrink:0; min-width:78px; padding:10px 8px; border-radius:14px; border:1px solid var(--border); background:var(--surface); cursor:pointer; font-family:inherit; }
+.category-tile:hover { border-color:var(--celeste); }
+.category-tile.active { border:2px solid var(--celeste); background:var(--celeste-light); }
+.category-tile-icon { height:34px; width:auto; object-fit:contain; }
+.category-tile-label { font-size:11px; font-weight:600; color:var(--text); text-align:center; }
+.category-tile-count { font-size:10px; color:var(--muted); }
+.category-tile.active .category-tile-label { color:var(--navy); }
+@media (max-width:700px) { .category-tile { min-width:66px; padding:8px 6px; } .category-tile-icon { height:26px; } }
 .notice { max-width:900px; margin:0 auto 10px; padding:10px 16px; background:var(--celeste-light); border:1px solid var(--celeste); color:var(--navy); border-radius:10px; font-size:12.5px; text-align:center; }
 
 /* Carrusel de logos de marcas (reemplaza al aviso de fotos/agotados) */
