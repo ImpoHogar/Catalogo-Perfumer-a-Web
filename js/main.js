@@ -27,7 +27,9 @@ document.addEventListener('DOMContentLoaded', () => {
     initTheme();
     renderBrandFilter();
     renderTipoGeneroFilter();
-    if (DIA_DEL_NINO_ACTIVE) { document.getElementById('diaNinoBtn').style.display = 'inline-block'; }
+    const hoyDiaNino = new Date();
+    const limiteDiaNino = new Date(DIA_DEL_NINO_FECHA_LIMITE + 'T23:59:59');
+    if (hoyDiaNino <= limiteDiaNino) { document.getElementById('diaNinoBtn').style.display = 'inline-block'; }
     restoreCartFromStorage();
     filteredProducts = VISIBLE_PRODUCTS;
     renderPage(true);

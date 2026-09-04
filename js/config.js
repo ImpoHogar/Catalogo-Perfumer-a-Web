@@ -42,7 +42,10 @@ const MOSTRAR_ETIQUETA_NUEVO = true;
 const PAGE_SIZE = 60;
 
 // Boton "Dia del Nino": marcas que agrupa.
-const DIA_DEL_NINO_ACTIVE = true;
+// El boton se muestra solo hasta esta fecha INCLUIDA (formato AAAA-MM-DD).
+// A partir del dia siguiente desaparece solo, sin que haya que tocar nada.
+// Para la proxima promocion con fecha, solo hay que cambiar este valor.
+const DIA_DEL_NINO_FECHA_LIMITE = "2026-09-09";
 const DIA_DEL_NINO_CATEGORIES = ["NEVADA", "GRANDEUR TUBBEES"];
 
 // Cuantos pedidos guarda el historial local de cada cliente.
