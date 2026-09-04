@@ -224,24 +224,6 @@ function buildFeedbackUI() {
 
 
 
-  const fab = document.createElement('div');
-
-  fab.className = 'fb-fab';
-
-  fab.id = 'fbFab';
-
-  fab.title = 'Dejar una opinion';
-
-  fab.setAttribute('role', 'button');
-
-  fab.textContent = '💬';
-
-  fab.addEventListener('click', openFeedback);
-
-  document.body.appendChild(fab);
-
-
-
   const modal = document.createElement('div');
 
   modal.className = 'fb-modal';
@@ -767,4 +749,3 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
 });
-
