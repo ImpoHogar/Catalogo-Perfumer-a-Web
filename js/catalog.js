@@ -22,6 +22,70 @@ function isProductNew(p) {
   return diffDays >= 0 && diffDays <= NEW_PRODUCT_DAYS;
 }
 
+// ============================================================
+//  BANNER PRINCIPAL DE NUEVOS INGRESOS (reemplaza al boton
+//  "Nuevos Ingresos" del toolbar)
+// ============================================================
+//  Muestra hasta 5 productos marcados como nuevos, rotando cada
+//  pocos segundos, con un boton que activa el mismo modo
+//  "Nuevos Ingresos" que ya existia (nuevosIngresosMode).
+// ============================================================
+let heroNuevosIndex = 0;
+let heroNuevosTimer = null;
+
+function renderHeroNuevos() {
+  const hero = document.getElementById('heroNuevos');
+  if (!hero) return;
+
+  const nuevos = VISIBLE_PRODUCTS.filter(isProductNew).slice(0, 5);
+
+  if (heroNuevosTimer) { clearInterval(heroNuevosTimer); heroNuevosTimer = null; }
+
+  if (!nuevos.length) {
+    hero.style.display = 'none';
+    return;
+  }
+
+  hero.style.display = 'block';
+  const track = document.getElementById('heroNuevosTrack');
+  const dots = document.getElementById('heroNuevosDots');
+
+  track.innerHTML = nuevos.map((p, i) => {
+    const imgSrc = p.img ? `img/p${p.id}.webp?v=${IMG_VERSION}` : placeholderImg(p.brand);
+    return `
+    <div class="hero-nuevos-slide${i === 0 ? ' active' : ''}" data-i="${i}">
+      <img src="${imgSrc}" alt="${escapeHtml(p.name)}">
+      <div class="hero-nuevos-info">
+        <div class="hero-nuevos-tag">Nuevo ingreso</div>
+        <div class="hero-nuevos-brand">${escapeHtml(p.brand)}</div>
+        <div class="hero-nuevos-name">${escapeHtml(p.name)}</div>
+      </div>
+    </div>`;
+  }).join('') + `
+    <button type="button" class="hero-nuevos-cta" onclick="showNuevosIngresos()">Ver todos los Nuevos Ingresos</button>`;
+
+  dots.innerHTML = nuevos.map((p, i) =>
+    `<span class="hero-nuevos-dot${i === 0 ? ' active' : ''}" data-i="${i}"></span>`
+  ).join('');
+
+  heroNuevosIndex = 0;
+  if (nuevos.length > 1) {
+    heroNuevosTimer = setInterval(() => advanceHeroNuevos(nuevos.length), 4000);
+  }
+}
+
+function advanceHeroNuevos(total) {
+  const slides = document.querySelectorAll('.hero-nuevos-slide');
+  const dots = document.querySelectorAll('.hero-nuevos-dot');
+  if (!slides.length) return;
+  slides[heroNuevosIndex].classList.remove('active');
+  dots[heroNuevosIndex].classList.remove('active');
+  heroNuevosIndex = (heroNuevosIndex + 1) % total;
+  slides[heroNuevosIndex].classList.add('active');
+  dots[heroNuevosIndex].classList.add('active');
+}
+
+
 function renderBrandFilter() {
   const sel = document.getElementById('brandFilter');
   BRANDS.forEach(b => {
@@ -35,12 +99,11 @@ function renderBrandFilter() {
 // ============================================================
 //  FILTRO DE CATEGORIA (tipo + genero combinados)
 // ============================================================
-const TIPO_GENERO_OPTIONS = ['Estuches', 'Splash/Bodymist', 'Hombre', 'Mujer', 'Niños', 'Unisex', 'Mascota'];
+const TIPO_GENERO_OPTIONS = ['Splash/Bodymist', 'Hombre', 'Mujer', 'Niños', 'Unisex', 'Mascota'];
 
 let selectedTipoGenero = new Set();
 
 function getTipoGeneroBucket(p) {
-  if (p.tipo === 'Estuche') return 'Estuches';
   if (p.tipo === 'Splash/Bodymist') return 'Splash/Bodymist';
   if (p.genero === 'Niños' || p.tipo === 'Niños') return 'Niños';
   if (p.genero === 'Hombre') return 'Hombre';
@@ -76,14 +139,7 @@ function renderTipoGeneroFilter() {
 }
 
 function toggleTipoGenero(opt) {
-  // Seleccion UNICA: elegir una categoria nueva reemplaza a la anterior.
-  // Click de nuevo sobre la misma categoria activa la deselecciona.
-  if (selectedTipoGenero.has(opt)) {
-    selectedTipoGenero.delete(opt);
-  } else {
-    selectedTipoGenero.clear();
-    selectedTipoGenero.add(opt);
-  }
+  if (selectedTipoGenero.has(opt)) selectedTipoGenero.delete(opt); else selectedTipoGenero.add(opt);
   diaNinoMode = false;
   document.getElementById('diaNinoBanner').style.display = 'none';
   nuevosIngresosMode = false;
@@ -187,20 +243,6 @@ function renderPage(reset) {
   if (loadMoreBtn) {
     loadMoreBtn.style.display = renderedCount < filteredProducts.length ? '' : 'none';
     loadMoreBtn.textContent = `Cargar más (${filteredProducts.length - renderedCount} restantes)`;
-  }
-
-  // Si el cliente esta buscando algo puntual y ese producto tiene un
-  // dupe/inspiracion cargado, se lo mostramos ya abierto, sin que tenga
-  // que tocar el boton (tenga o no tenga stock). Fuera de una busqueda
-  // (navegando el catalogo normal) el panel se queda como siempre:
-  // cerrado hasta que el cliente lo abre.
-  const searchQuery = document.getElementById('search').value.trim();
-  if (searchQuery && typeof getRelatedProducts === 'function') {
-    nextBatch.forEach(p => {
-      if (!getRelatedProducts(p.id).length) return;
-      const panel = document.getElementById('dupe-panel-' + p.id);
-      if (panel) panel.classList.add('open');
-    });
   }
 }
 

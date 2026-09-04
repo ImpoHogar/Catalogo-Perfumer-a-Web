@@ -36,6 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const missingPhotos = VISIBLE_PRODUCTS.filter(p => !p.img).length;
     const agotados = VISIBLE_PRODUCTS.filter(p => (parseInt(p.stock) || 0) <= 0).length;
     renderBrandMarquee();
+    renderHeroNuevos();
     document.getElementById('search').addEventListener('input', applyFilters);
     document.getElementById('brandFilter').addEventListener('change', () => { diaNinoMode = false; document.getElementById('diaNinoBanner').style.display = 'none'; applyFilters(); });
     document.getElementById('loadMoreBtn').addEventListener('click', () => renderPage(false));
