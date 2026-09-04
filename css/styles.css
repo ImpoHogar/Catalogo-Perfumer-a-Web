@@ -16,6 +16,15 @@ body, header, .toolbar, .card, .barcode-strip, .notice, .thanks-card, select, .t
 body { margin:0; font-family: 'Helvetica Neue', Arial, sans-serif; background: var(--bg); color: var(--text); }
 header { padding: 14px 16px 10px; text-align:center; position: sticky; top:0; background: var(--surface); z-index: 50; border-bottom: 1px solid var(--border); box-shadow: 0 2px 10px rgba(18,58,107,0.05); }
 
+/* Pantalla de bienvenida animada, antes de pedir la clave */
+#welcomeLogo { animation: welcomeLogoIn 0.6s ease-out forwards; }
+#welcomeText { animation: welcomeTextIn 0.5s ease-out forwards; animation-delay: 0.5s; }
+#welcomeScreen.fade-out { animation: welcomeFadeOut 0.5s ease-out forwards; }
+@keyframes welcomeLogoIn { from { opacity:0; transform:scale(0.7); } to { opacity:1; transform:scale(1); } }
+@keyframes welcomeTextIn { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+@keyframes welcomeFadeOut { from { opacity:1; } to { opacity:0; } }
+@media (prefers-reduced-motion: reduce) { #welcomeLogo, #welcomeText { animation: none; opacity:1; } }
+
 /* Banner principal de Nuevos Ingresos (reemplaza al boton del toolbar) */
 .hero-nuevos { position:relative; height:220px; overflow:hidden; background:linear-gradient(135deg,var(--navy),#1b2a3c); margin-bottom:6px; }
 .hero-nuevos-track { position:relative; width:100%; height:100%; }

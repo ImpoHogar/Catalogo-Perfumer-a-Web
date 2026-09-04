@@ -17,7 +17,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/styles.css?v=20260904k">
+<link rel="stylesheet" href="css/styles.css?v=20260904l">
 </head>
 <body>
 <noscript>
@@ -31,17 +31,20 @@
     </div>
   </div>
 </noscript>
-<div id="gate" style="position:fixed;inset:0;background:linear-gradient(180deg,#ffffff,#eef3f9);z-index:999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;padding:20px;text-align:center;">
-  <img src="img/logo.png" alt="Grupo Impohogar" style="width:260px;max-width:80vw;margin-bottom:6px;">
-  <div style="color:#123a6b;font-size:16px;font-weight:700;letter-spacing:0.5px;">CATÁLOGO DE PEDIDO</div>
-  <div style="color:#66788c;font-size:13px;">Ingresa la clave de acceso</div>
-  <input id="gatePass" type="password" placeholder="Clave" style="padding:12px 16px;border-radius:20px;border:1px solid #dfe6ee;background:#fff;color:#1b2a3c;font-size:14px;width:220px;text-align:center;">
-  <button id="gateBtn" style="background:linear-gradient(135deg,#123a6b,#29ABE2);color:#fff;border:none;padding:12px 26px;border-radius:24px;font-weight:700;font-size:14px;cursor:pointer;">Entrar</button>
-  <div id="gateError" style="color:#d1483f;font-size:12px;height:14px;"></div>
-  <div style="max-width:280px;color:#8a97a5;font-size:11px;line-height:1.5;margin-top:10px;border-top:1px solid #e2e9f2;padding-top:10px;">
-    <b style="color:#123a6b;">¡Bienvenido/a a nuestro catálogo!</b><br>
-    Estamos felices de tenerte por aquí. Explora nuestros productos y arma tu pedido.
+<div id="welcomeScreen" style="position:fixed;inset:0;background:linear-gradient(135deg,#0f1621,#123a6b);z-index:1000;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center;">
+  <img src="img/logo.png" alt="Grupo Impohogar" id="welcomeLogo" style="width:220px;max-width:70vw;opacity:0;">
+  <div id="welcomeText" style="color:#fff;font-size:14px;margin-top:18px;opacity:0;">
+    <div style="font-weight:600;font-size:16px;">¡Bienvenido/a a nuestro catálogo!</div>
+    <div style="color:#9fc4e8;font-size:12.5px;margin-top:4px;">Estamos felices de tenerte por aquí</div>
   </div>
+</div>
+<div id="gate" style="position:fixed;inset:0;background:linear-gradient(135deg,#0f1621,#123a6b);z-index:999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;padding:20px;text-align:center;">
+  <img src="img/logo-dark.png" alt="Grupo Impohogar" style="width:200px;max-width:70vw;margin-bottom:6px;">
+  <div style="color:#fff;font-size:16px;font-weight:700;letter-spacing:0.5px;">CATÁLOGO DE PEDIDO</div>
+  <div style="color:#9fc4e8;font-size:13px;">Ingresa la clave de acceso</div>
+  <input id="gatePass" type="password" placeholder="Clave" style="padding:12px 16px;border-radius:20px;border:1px solid #29ABE2;background:#1b2536;color:#fff;font-size:14px;width:220px;text-align:center;">
+  <button id="gateBtn" style="background:linear-gradient(135deg,#123a6b,#29ABE2);color:#fff;border:none;padding:12px 26px;border-radius:24px;font-weight:700;font-size:14px;cursor:pointer;">Entrar</button>
+  <div id="gateError" style="color:#ff8a80;font-size:12px;height:14px;"></div>
 </div>
 <div id="mainContent" style="display:none;">
 <header>
@@ -275,21 +278,21 @@
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.12.3/JsBarcode.all.min.js"></script>
 
 <!-- El ORDEN de estos archivos importa: no los reordenes. -->
-<script defer src="js/config.js?v=20260904k"></script>
-<script defer src="js/products.js?v=20260904k"></script>
-<script defer src="js/stock.js?v=20260904k"></script>
-<script defer src="js/data.js?v=20260904k"></script>
-<script defer src="js/utils.js?v=20260904k"></script>
-<script defer src="js/dupes.js?v=20260904k"></script>
-<script defer src="js/catalog.js?v=20260904k"></script>
-<script defer src="js/cart.js?v=20260904k"></script>
-<script defer src="js/theme.js?v=20260904k"></script>
-<script defer src="js/order.js?v=20260904k"></script>
-<script defer src="js/history.js?v=20260904k"></script>
-<script defer src="js/calculator.js?v=20260904k"></script>
-<script defer src="js/lightbox.js?v=20260904k"></script>
-<script defer src="js/gate.js?v=20260904k"></script>
-<script defer src="js/feedback.js?v=20260904k"></script>
-<script defer src="js/main.js?v=20260904k"></script>
+<script defer src="js/config.js?v=20260904l"></script>
+<script defer src="js/products.js?v=20260904l"></script>
+<script defer src="js/stock.js?v=20260904l"></script>
+<script defer src="js/data.js?v=20260904l"></script>
+<script defer src="js/utils.js?v=20260904l"></script>
+<script defer src="js/dupes.js?v=20260904l"></script>
+<script defer src="js/catalog.js?v=20260904l"></script>
+<script defer src="js/cart.js?v=20260904l"></script>
+<script defer src="js/theme.js?v=20260904l"></script>
+<script defer src="js/order.js?v=20260904l"></script>
+<script defer src="js/history.js?v=20260904l"></script>
+<script defer src="js/calculator.js?v=20260904l"></script>
+<script defer src="js/lightbox.js?v=20260904l"></script>
+<script defer src="js/gate.js?v=20260904l"></script>
+<script defer src="js/feedback.js?v=20260904l"></script>
+<script defer src="js/main.js?v=20260904l"></script>
 </body>
 </html>
