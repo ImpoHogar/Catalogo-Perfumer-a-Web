@@ -165,7 +165,7 @@ function cardHTML(p) {
   const agotadoBadge = agotado ? '<div class="agotado-badge">AGOTADO</div>' : '';
   const stockLabel = agotado ? 'Agotado' : `${escapeHtml(p.stock)} uds`;
   const initialQty = qtyMap[p.id] || 0;
-  const cardClasses = 'card' + (initialQty > 0 ? ' has-qty' : '') + (agotado ? ' agotado' : '');
+  const cardClasses = 'card' + (initialQty > 0 ? ' has-qty' : '') + (agotado ? ' agotado' : '') + (isProductNew(p) ? ' new-arrival' : '');
   const qtyControls = agotado
     ? `<span class="lbl">Sin stock disponible</span>`
     : `<span class="lbl">Pedir:</span>

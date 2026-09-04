@@ -33,6 +33,9 @@ header { padding: 14px 16px 10px; text-align:center; position: sticky; top:0; ba
 .hero-nuevos-dot.active { background:#fff; }
 @media (max-width:700px) { .hero-nuevos { height:260px; } .hero-nuevos-slide { flex-direction:column; gap:10px; padding-top:14px; } .hero-nuevos-slide img { height:110px; } .hero-nuevos-name { font-size:15px; } .hero-nuevos-cta { left:50%; transform:translateX(-50%); bottom:12px; } .hero-nuevos-dots { display:none; } }
 header img.brand-logo { height: 44px; display:block; margin: 0 auto; }
+header img.brand-logo-dark { height: 44px; display:none; margin: 0 auto; }
+body.dark header img.brand-logo { display:none; }
+body.dark header img.brand-logo-dark { display:block; }
 header p { margin:6px 0 0; color: var(--muted); font-size:12px; }
 .toolbar { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; padding: 12px 16px; position: sticky; top: 72px; background: var(--bg); z-index: 49; border-bottom: 1px solid var(--border);}
 .toolbar input[type=text] { flex:1; min-width:180px; max-width:380px; padding:10px 14px; border-radius:20px; border:1px solid var(--border); background:var(--input-bg); color:var(--text); font-size:14px; outline:none; }
@@ -79,6 +82,7 @@ body.dark .brand-logo-item { filter: brightness(0) invert(1); }
 .card { background: var(--surface); border-radius:14px; overflow:hidden; border:1px solid var(--border); display:flex; flex-direction:column; box-shadow: 0 1px 4px rgba(18,58,107,0.06); transition: box-shadow .15s, transform .15s; }
 .card:hover { box-shadow: 0 6px 18px rgba(18,58,107,0.12); transform: translateY(-1px); }
 .card.has-qty { border-color: var(--celeste); box-shadow: 0 0 0 2px rgba(41,171,226,0.35); }
+.card.new-arrival { border-color: #C9A24B; box-shadow: 0 0 0 2px rgba(201,162,75,0.35); }
 .card img { width:100%; height:340px; object-fit:contain; background:#fff; }
 .photo-wrap { position:relative; overflow:hidden; cursor:zoom-in; }
 .photo-wrap img { transition: transform .25s ease; }
@@ -161,7 +165,7 @@ body.dark .brand-logo-item { filter: brightness(0) invert(1); }
 .calc-grid button.calc-zero { grid-column: span 2; }
 .info { padding:8px 10px 10px; flex:1; display:flex; flex-direction:column; gap:6px;}
 .brand-tag { font-family:'Inter',Arial,sans-serif; font-size:9px; text-transform:uppercase; letter-spacing:0.8px; color: var(--navy); font-weight:700; }
-.new-badge { position:absolute; top:10px; left:10px; background:linear-gradient(135deg, #e0523f, #c9382a); color:#fff; font-size:10px; font-weight:800; letter-spacing:0.5px; padding:4px 10px; border-radius:6px; box-shadow:0 2px 6px rgba(0,0,0,0.25); z-index:2; }
+.new-badge { position:absolute; top:10px; left:10px; background:linear-gradient(135deg, #C9A24B, #E4C878); color:#3a2f10; font-size:10px; font-weight:800; letter-spacing:0.5px; padding:4px 10px; border-radius:6px; box-shadow:0 2px 6px rgba(0,0,0,0.25); z-index:2; }
 .agotado-badge { position:absolute; top:10px; right:10px; background:linear-gradient(135deg, #6b7280, #3f4653); color:#fff; font-size:10px; font-weight:800; letter-spacing:0.5px; padding:4px 10px; border-radius:6px; box-shadow:0 2px 6px rgba(0,0,0,0.25); z-index:2; }
 .card.agotado { opacity:0.6; }
 .card.agotado .photo-wrap img { filter: grayscale(60%); }
@@ -202,6 +206,7 @@ body.dark .brand-logo-item { filter: brightness(0) invert(1); }
 #orderBar button { background: linear-gradient(135deg, var(--navy), var(--celeste)); color:#fff; border:none; padding:12px 22px; border-radius:24px; font-weight:700; font-size:14px; cursor:pointer; }
 #orderBar button:disabled { background:#c7d0da; color:#8a97a5; cursor:not-allowed; }
 #orderBar .review-cta-btn { background: linear-gradient(135deg, var(--navy), var(--celeste)); color:#fff; border:none; border-radius:10px; padding:12px 20px; font-weight:700; font-size:12.5px; line-height:1.35; text-align:center; max-width:300px; cursor:pointer; }
+#orderBar #genBtn { border: 2px solid #C9A24B; }
 #orderBar .review-cta-btn:hover { opacity:0.92; }
 @media (max-width:900px) { #orderBar { justify-content:center; } .order-bar-main { margin:0; } #orderBar .review-cta-btn { max-width:100%; } }
 #status { font-size:12px; color:#1f9d55; min-width: 120px; }

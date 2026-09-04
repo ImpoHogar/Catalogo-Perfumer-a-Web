@@ -21,7 +21,9 @@ function toggleTheme() {
 }
 
 function initTheme() {
-  let saved = 'light';
-  try { saved = localStorage.getItem('impohogar_theme') || 'light'; } catch (err) {}
+  // Por defecto el catalogo abre en modo oscuro. Si el cliente ya eligio
+  // un tema antes (guardado en su navegador), se respeta esa eleccion.
+  let saved = 'dark';
+  try { saved = localStorage.getItem('impohogar_theme') || 'dark'; } catch (err) {}
   applyTheme(saved);
 }
