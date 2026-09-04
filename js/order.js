@@ -104,6 +104,16 @@ async function generateExcel() {
       totalProducts: historyItems.length,
       totalUnits: historyItems.reduce((sum, it) => sum + it.qty, 0)
     };
+
+    // Aviso a Google Analytics de que se genero un pedido, sin mandar
+    // ningun dato personal del cliente (solo cantidades).
+    if (typeof gtag === 'function') {
+      gtag('event', 'generar_pedido', {
+        cantidad_productos: lastOrderSummary.totalProducts,
+        cantidad_unidades: lastOrderSummary.totalUnits
+      });
+    }
+
     clearCart();
 
     if (photoItems.length > 0) {
