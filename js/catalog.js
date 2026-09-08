@@ -234,6 +234,33 @@ function computeFiltered() {
   });
 }
 
+
+// ============================================================
+//  ANIMACION DE ENTRADA AL SCROLLEAR (scroll reveal)
+// ============================================================
+//  Cada tarjeta nueva empieza invisible y se desliza suavemente
+//  hacia arriba la primera vez que entra en pantalla al scrollear.
+//  Respeta la preferencia de "reducir movimiento" del sistema.
+// ============================================================
+let revealObserver = null;
+function observeRevealCards(elementos) {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  if (!revealObserver) {
+    revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('reveal-in');
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+  }
+  elementos.forEach(el => {
+    el.classList.add('reveal');
+    revealObserver.observe(el);
+  });
+}
+
 function renderPage(reset) {
   const grid = document.getElementById('grid');
   if (reset) {
@@ -242,8 +269,10 @@ function renderPage(reset) {
     window.scrollTo({ top: grid.offsetTop - 140, behavior: 'auto' });
   }
   const nextBatch = filteredProducts.slice(renderedCount, renderedCount + PAGE_SIZE);
+  const antesDeInsertar = grid.children.length;
   grid.insertAdjacentHTML('beforeend', nextBatch.map(cardHTML).join(''));
   renderBarcodes(nextBatch.map(p => p.id));
+  observeRevealCards(Array.from(grid.children).slice(antesDeInsertar));
   renderedCount += nextBatch.length;
   document.getElementById('count').textContent = filteredProducts.length + ' productos';
   const loadMoreBtn = document.getElementById('loadMoreBtn');
