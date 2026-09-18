@@ -1,6 +1,6 @@
 // =====================================================================
-//  ARCHIVO COMPLETO js/dupes.js  -  version final 26/08/2026
-//  43 relaciones (la prueba original + 42 pares)
+//  ARCHIVO COMPLETO js/dupes.js  -  version final 18/09/2026
+//  42 relaciones (se quito LATTAFA QIMMAH <-> CAROLINA H. GOOD GIRL)
 // =====================================================================
 //  QUE HACER, PASO A PASO:
 //  1) Abri js/dupes.js en Visual Studio Code.
@@ -13,22 +13,6 @@
 //  lo viejo vas a tener dos veces "const DUPE_RELATIONS", el navegador tira
 //  SyntaxError y no ejecuta nada del archivo. Eso es lo que causaba el
 //  error "dupePanelHTML is not defined".
-//
-//  QUE SE PROBO ANTES DE MANDARTelo:
-//  - Sintaxis validada.
-//  - Se cargaron config, products, stock, data, utils y dupes en el mismo
-//    orden que el index.html: los 86 ids referenciados existen en tu
-//    products.js, no hay pares duplicados ni relaciones de un producto
-//    consigo mismo, y las cinco funciones quedan definidas.
-//  - Se probo la relacion en las dos direcciones. Ejemplo real: el Dior
-//    Sauvage 100ml EDP muestra sus 5 dupes (Lattafa Asad, Armaf Club de
-//    Nuit Urban Elixir, Armaf Ventana, Emir Frenetic Men y Maison Alhambra
-//    Salvo), y cada uno de esos muestra el Sauvage.
-//
-//  UNICO PENDIENTE:
-//  El id 3054 (LATAFFA YARA TOUS AMARILLO) no tiene foto y el catalogo
-//  oculta los productos sin imagen. La relacion esta bien cargada pero su
-//  boton no se va a ver hasta que le subas la foto.
 // =====================================================================
 
 // ============================================================
@@ -42,7 +26,7 @@ const DUPE_RELATIONS = [
   // ---------- PRUEBA ORIGINAL ----------
   { a: 5024, b: 2112, tipo: 'dupe_confirmado' }, // Valentino Uomo Born In Roma Intense <-> Stallion 53 Uomo Intense (Emper)
 
-  // ---------- LATTAFA (11) ----------
+  // ---------- LATTAFA (10) ----------
   { a: 3043, b: 1372, tipo: 'inspiracion' }, // LATAFFA ASAD  <->  DIOR SAUVAGE 100ML EDP H
   { a: 3054, b: 3633, tipo: 'inspiracion' }, // LATAFFA YARA TOUS AMARILLO  <->  PACO.R FAME 80ML EDP M
   { a: 3102, b: 3593, tipo: 'inspiracion' }, // LATTAFA HAYAATI  <->  PACO R. INVICTUS EDT 100 ML
@@ -52,7 +36,6 @@ const DUPE_RELATIONS = [
   { a: 3163, b: 2879, tipo: 'inspiracion' }, // LATTAFA TERIAQ EDP 100ML  <->  JPG LA BELLE WOMAN EDP 100 ML
   { a: 3164, b: 2795, tipo: 'inspiracion' }, // LATTAFA THE KINGDOM H EDP 100ML  <->  JEAN PAUL.G LE MALE 125ML EDT H
   { a: 3183, b: 5298, tipo: 'inspiracion' }, // LATTAFA-FAKHAR XTRAIT 100ML  <->  1 MILLION ELIXIR PARFUM INTENSE 100ML
-  { a: 3150, b: 990, tipo: 'inspiracion' }, // LATTAFA QIMMAH 100ML  <->  CAROLINA H. GOOD GIRL EDP 80 ML
   { a: 3122, b: 2453, tipo: 'inspiracion' }, // LATTAFA MAYAR VERDE 100ML EDP  <->  GIORGIO ARMANI MY WAY INTENSE EDP 90ML
 
   // ---------- EMPER (2) ----------
