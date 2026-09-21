@@ -1,8 +1,14 @@
 // ============================================================
-//  VISOR DE FOTOS (zoom, gestos, codigo de barras)
+//  FICHA DEL PRODUCTO / VISOR DE FOTOS (zoom, gestos, codigo de barras)
+// ============================================================
+//  Al tocar la foto de un producto se abre su ficha: a la izquierda
+//  la foto (con zoom, pellizco y flechas para pasar al codigo de
+//  barras), a la derecha la informacion que YA existe en el catalogo:
+//  marca, nombre, categoria, codigo, stock, notas olfativas y sus
+//  dupes/inspiraciones. No agrega datos nuevos: solo los presenta.
 // ============================================================
 
-let lightboxState = { images: [], index: 0, scale: 1 };
+let lightboxState = { images: [], index: 0, scale: 1, pid: null };
 
 let pinchStartDist = null;
 
@@ -29,10 +35,79 @@ function getProductImages(p) {
 
 function openLightbox(pid, imgIndex) {
   const p = PRODUCTS_BY_ID[pid];
+  if (!p) return;
+  lightboxState.pid = pid;
   lightboxState.images = getProductImages(p);
   lightboxState.index = imgIndex;
   updateLightbox();
-  document.getElementById('lightbox').classList.add('open');
+  renderLightboxInfo(p);
+  const lb = document.getElementById('lightbox');
+  lb.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  const info = document.getElementById('lightboxInfo');
+  if (info) info.scrollTop = 0;
+}
+
+// Panel derecho con la informacion del producto
+function renderLightboxInfo(p) {
+  const info = document.getElementById('lightboxInfo');
+  if (!info) return;
+  const stockNum = parseInt(p.stock) || 0;
+  const agotado = stockNum <= 0;
+  const categoria = (typeof getTipoGeneroBucket === 'function') ? getTipoGeneroBucket(p) : null;
+  const esNuevo = (typeof isProductNew === 'function') && isProductNew(p);
+  const enPedido = (typeof qtyMap !== 'undefined' && qtyMap[p.id]) ? qtyMap[p.id] : 0;
+
+  const tags = [];
+  if (esNuevo) tags.push('<span class="lb-tag is-new">Nuevo ingreso</span>');
+  if (p.tipo) tags.push(`<span class="lb-tag">${escapeHtml(p.tipo)}</span>`);
+  if (p.genero && p.genero !== p.tipo) tags.push(`<span class="lb-tag">${escapeHtml(p.genero)}</span>`);
+  if (categoria && categoria !== p.tipo && categoria !== p.genero && !(categoria === 'Estuches' && p.tipo === 'Estuche')) {
+    tags.push(`<span class="lb-tag">${escapeHtml(categoria)}</span>`);
+  }
+
+  const notas = (p.notes && p.notes.length) ? `
+    <div class="lb-section">
+      <h4 class="lb-section-title">Notas olfativas</h4>
+      <div class="lb-notes">${p.notes.map(n => `<span class="lb-note">${escapeHtml(n)}</span>`).join('')}</div>
+    </div>` : '';
+
+  const rels = (typeof getRelatedProducts === 'function') ? getRelatedProducts(p.id) : [];
+  const relacionados = rels.length ? `
+    <div class="lb-section">
+      <h4 class="lb-section-title">Dupe / Inspiración</h4>
+      <div class="lb-related">
+        ${rels.map(r => {
+          const rp = r.product;
+          const rAgotado = (parseInt(rp.stock) || 0) <= 0;
+          const label = r.tipo === 'dupe_confirmado' ? 'Dupe / Inspiración confirmada'
+                      : r.tipo === 'inspiracion'     ? 'Dupe / Inspiración'
+                      : 'Perfil similar';
+          const rImg = rp.img ? `img/p${rp.id}.webp?v=${IMG_VERSION}` : placeholderImg(rp.brand);
+          return `
+          <button type="button" class="lb-rel" onclick="openLightbox(${rp.id}, 0)">
+            <img src="${rImg}" alt="">
+            <span><span class="lb-rel-brand">${escapeHtml(rp.brand)} · ${label}</span><span class="lb-rel-name">${escapeHtml(rp.name)}</span></span>
+            <span class="stock${rAgotado ? ' is-out' : ''}">${rAgotado ? 'Agotado' : escapeHtml(rp.stock) + ' uds'}</span>
+          </button>`;
+        }).join('')}
+      </div>
+    </div>` : '';
+
+  info.innerHTML = `
+    <div class="lb-brand">${escapeHtml(p.brand)}</div>
+    <h2 class="lb-name">${escapeHtml(p.name)}</h2>
+    ${tags.length ? `<div class="lb-tags">${tags.join('')}</div>` : ''}
+    <dl class="lb-facts">
+      <div class="lb-fact"><dt>Disponibilidad</dt><dd><span class="stock${agotado ? ' is-out' : ''}">${agotado ? 'Agotado' : escapeHtml(p.stock) + ' uds'}</span></dd></div>
+      <div class="lb-fact"><dt>Código</dt><dd class="code">${escapeHtml(p.code)}</dd></div>
+    </dl>
+    ${enPedido ? `<div class="lb-incart">En tu pedido: <b>${enPedido} ${enPedido === 1 ? 'unidad' : 'unidades'}</b></div>` : ''}
+    ${notas}
+    ${relacionados}
+    <div class="lb-actions">
+      <button type="button" class="btn btn-ghost" onclick="closeLightbox(); jumpToProduct(${p.id});">Ir al producto en el catálogo</button>
+    </div>`;
 }
 
 function updateLightbox() {
@@ -45,6 +120,9 @@ function updateLightbox() {
   img.style.transform = 'scale(1)';
   img.classList.remove('zoomed');
   lightboxState.scale = 1;
+  document.querySelectorAll('#lightboxTabs button').forEach(b => {
+    b.classList.toggle('active', Number(b.dataset.i) === index);
+  });
 }
 
 function lightboxNav(delta, evt) {
@@ -54,8 +132,17 @@ function lightboxNav(delta, evt) {
   updateLightbox();
 }
 
+// Salta directo a la foto (0) o al codigo de barras (1)
+function lightboxGoTo(i, evt) {
+  if (evt) evt.stopPropagation();
+  if (!lightboxState.images[i]) return;
+  lightboxState.index = i;
+  updateLightbox();
+}
+
 function closeLightbox() {
   document.getElementById('lightbox').classList.remove('open');
+  document.body.style.overflow = '';
 }
 
 function toggleZoom(e) {

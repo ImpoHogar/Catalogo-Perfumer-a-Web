@@ -12,12 +12,13 @@
 </script>
 
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0C1016">
 <title>Catálogo de Pedido</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/styles.css?v=20260921c">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css?v=20260921e">
 </head>
 <body>
 <noscript>
@@ -31,206 +32,282 @@
     </div>
   </div>
 </noscript>
-<div id="welcomeScreen" style="position:fixed;inset:0;background:linear-gradient(135deg,#0f1621,#123a6b);z-index:1000;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center;">
-  <img src="img/logo.png" alt="Grupo Impohogar" id="welcomeLogo" style="width:220px;max-width:70vw;opacity:0;">
-  <div id="welcomeText" style="color:#fff;font-size:14px;margin-top:18px;opacity:0;">
-    <div style="font-weight:600;font-size:16px;">¡Bienvenido/a a nuestro catálogo!</div>
-    <div style="color:#9fc4e8;font-size:12.5px;margin-top:4px;">Estamos felices de tenerte por aquí</div>
+
+<!-- ============ PANTALLA DE BIENVENIDA ============ -->
+<div id="welcomeScreen" class="welcome-screen">
+  <img src="img/logo-dark.png" alt="Grupo Impohogar" id="welcomeLogo">
+  <div id="welcomeText">
+    <div class="welcome-title">¡Bienvenido/a a nuestro catálogo!</div>
+    <div class="welcome-sub">Estamos felices de tenerte por aquí</div>
   </div>
 </div>
-<div id="gate" style="position:fixed;inset:0;background:linear-gradient(135deg,#0f1621,#123a6b);z-index:999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;padding:20px;text-align:center;">
-  <img src="img/logo-dark.png" alt="Grupo Impohogar" style="width:200px;max-width:70vw;margin-bottom:6px;">
-  <div style="color:#fff;font-size:16px;font-weight:700;letter-spacing:0.5px;">CATÁLOGO DE PEDIDO</div>
-  <div style="color:#9fc4e8;font-size:13px;">Ingresa la clave de acceso</div>
-  <input id="gatePass" type="password" placeholder="Clave" style="padding:12px 16px;border-radius:20px;border:1px solid #29ABE2;background:#1b2536;color:#fff;font-size:14px;width:220px;text-align:center;">
-  <button id="gateBtn" style="background:linear-gradient(135deg,#123a6b,#29ABE2);color:#fff;border:none;padding:12px 26px;border-radius:24px;font-weight:700;font-size:14px;cursor:pointer;">Entrar</button>
-  <div id="gateError" style="color:#ff8a80;font-size:12px;height:14px;"></div>
+
+<!-- ============ PANTALLA DE CLAVE ============ -->
+<div id="gate" class="gate">
+  <div class="gate-card">
+    <img src="img/logo-dark.png" alt="Grupo Impohogar" class="gate-logo">
+    <div class="gate-eyebrow">CATÁLOGO DE PEDIDO</div>
+    <label class="gate-label" for="gatePass">Ingresa la clave de acceso</label>
+    <input id="gatePass" type="password" placeholder="Clave" autocomplete="current-password">
+    <button id="gateBtn" type="button">Entrar</button>
+    <div id="gateError" role="alert"></div>
+  </div>
 </div>
+
 <div id="mainContent" style="display:none;">
-<header>
-  <img class="brand-logo" src="img/logo.png" alt="Grupo Impohogar">
-  <img class="brand-logo-dark" src="img/logo-dark.png" alt="Grupo Impohogar">
-  <p>Ingresa la cantidad que deseas en cada producto y genera tu pedido en Excel</p>
+
+<!-- ============ ENCABEZADO ============ -->
+<header class="site-header" id="siteHeader">
+  <div class="header-inner">
+    <a class="header-logo" href="#top" onclick="window.scrollTo({top:0,behavior:'smooth'}); return false;" aria-label="Grupo Impohogar, volver arriba">
+      <img class="brand-logo" src="img/logo.png" alt="Grupo Impohogar">
+      <img class="brand-logo-dark" src="img/logo-dark.png" alt="Grupo Impohogar">
+    </a>
+
+    <div class="toolbar" role="search">
+      <div class="search-field">
+        <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
+        <input id="search" type="search" placeholder="Buscar por nombre o código..." autocomplete="off" enterkeyhint="search" aria-label="Buscar por nombre o código">
+      </div>
+      <div class="brand-field">
+        <select id="brandFilter" aria-label="Filtrar por marca"><option value="">Todas las marcas</option></select>
+      </div>
+    </div>
+
+    <nav class="header-actions" aria-label="Acciones">
+      <button id="diaNinoBtn" type="button" class="dia-nino-btn" style="display:none;" onclick="showDiaDelNino()">Día del Niño</button>
+      <button id="historyBtn" type="button" class="icon-btn" onclick="openOrderHistory()" title="Historial de pedidos" aria-label="Historial de pedidos">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 12a8.5 8.5 0 1 0 2.5-6"/><path d="M3.5 4.5V9H8"/><path d="M12 7.5V12l3 2"/></svg>
+        <span class="icon-btn-label">Historial de pedidos</span>
+      </button>
+      <button id="calcBtn" type="button" class="icon-btn" onclick="openCalculator()" title="Calculadora" aria-label="Calculadora">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8.5 7h7"/><path d="M8.5 11.5h.01M12 11.5h.01M15.5 11.5h.01M8.5 15h.01M12 15h.01M15.5 15h.01M8.5 18h.01M12 18h.01M15.5 18h.01"/></svg>
+        <span class="icon-btn-label">Calculadora</span>
+      </button>
+      <button id="themeToggle" type="button" class="icon-btn theme-toggle" onclick="toggleTheme()" title="Cambiar tema" aria-label="Cambiar tema claro/oscuro"></button>
+      <button id="reviewOrderBtn" type="button" class="review-btn" onclick="openOrderReview()" aria-label="Ver mi pedido">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8h12l-1 12H7L6 8Z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/></svg>
+        <span class="review-btn-label">Ver mi pedido</span>
+        <span id="reviewBadge" class="review-badge" style="display:none;">0</span>
+      </button>
+    </nav>
+  </div>
 </header>
-<div class="toolbar">
-  <input id="search" type="text" placeholder="Buscar por nombre o código...">
-  <select id="brandFilter"><option value="">Todas las marcas</option></select>
-  <button id="diaNinoBtn" type="button" class="dia-nino-btn" style="display:none;" onclick="showDiaDelNino()">🎈 Día del Niño 🎈</button>
-  <button id="reviewOrderBtn" class="review-btn" onclick="openOrderReview()">🛒 Ver mi pedido <span id="reviewBadge" class="review-badge" style="display:none;">0</span></button>
-  <button id="calcBtn" class="review-btn" onclick="openCalculator()">🧮 Calculadora</button>
-  <button id="historyBtn" class="review-btn" onclick="openOrderHistory()">📋 Historial de pedidos</button>
-</div>
-<div class="hero-nuevos" id="heroNuevos" style="display:none;">
-  <div class="hero-nuevos-track" id="heroNuevosTrack"></div>
-  <div class="hero-nuevos-dots" id="heroNuevosDots"></div>
-</div>
+
+<!-- ============ BANNER NUEVOS INGRESOS ============ -->
+<section class="hero-nuevos" id="heroNuevos" style="display:none;" aria-label="Nuevos ingresos">
+  <div class="hero-copy">
+    <h2 class="hero-title">Nuevos ingresos</h2>
+    <div class="hero-nuevos-track" id="heroNuevosTrack"></div>
+    <div class="hero-controls">
+      <button type="button" class="btn btn-primary hero-nuevos-cta" onclick="showNuevosIngresos()">Ver todos los Nuevos Ingresos
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </button>
+      <div class="hero-progress">
+        <span class="hero-counter" id="heroNuevosCounter"></span>
+        <div class="hero-nuevos-dots" id="heroNuevosDots"></div>
+      </div>
+    </div>
+  </div>
+  <div class="hero-media" id="heroNuevosMedia"></div>
+</section>
+
+<!-- ============ CARRUSEL DE MARCAS ============ -->
 <div class="brand-marquee" id="brandMarquee" aria-hidden="true">
   <div class="brand-marquee-track" id="brandMarqueeTrack"></div>
 </div>
-<div class="category-tiles" id="categoryTiles" aria-label="Filtrar por categoría"></div>
-<div class="badge-count" id="count"></div>
-<div class="dia-nino-banner" id="diaNinoBanner" style="display:none;">🎈 Estás viendo la sección Día del Niño 🎈 &nbsp; <button type="button" class="review-btn" onclick="exitDiaDelNino()">Ver todos los productos</button></div>
-<div class="nuevos-ingresos-banner" id="nuevosIngresosBanner" style="display:none;">🆕 Estás viendo Nuevos Ingresos 🆕 &nbsp; <button type="button" class="review-btn" onclick="exitNuevosIngresos()">Ver todos los productos</button></div>
-<div class="grid" id="grid"></div>
-<div style="text-align:center; padding: 6px 16px 30px;">
-  <button id="loadMoreBtn" type="button" class="load-more-btn" style="display:none;">Cargar más</button>
-</div>
 
+<!-- ============ CATALOGO ============ -->
+<main class="catalog" id="catalogo">
+  <div class="catalog-head">
+    <div>
+      <h1 class="catalog-title">Catálogo</h1>
+      <p class="catalog-sub">Ingresa la cantidad que deseas en cada producto y genera tu pedido en Excel</p>
+    </div>
+    <div class="badge-count" id="count" aria-live="polite"></div>
+  </div>
+
+  <div class="category-tiles" id="categoryTiles" aria-label="Filtrar por categoría"></div>
+
+  <div class="view-banner dia-nino-banner" id="diaNinoBanner" style="display:none;">
+    <span>Estás viendo la sección <b>Día del Niño</b></span>
+    <button type="button" class="btn btn-ghost" onclick="exitDiaDelNino()">Ver todos los productos</button>
+  </div>
+  <div class="view-banner nuevos-ingresos-banner" id="nuevosIngresosBanner" style="display:none;">
+    <span>Estás viendo <b>Nuevos Ingresos</b></span>
+    <button type="button" class="btn btn-ghost" onclick="exitNuevosIngresos()">Ver todos los productos</button>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <div class="load-more-wrap">
+    <div class="load-more-meta" id="loadMoreMeta"></div>
+    <button id="loadMoreBtn" type="button" class="load-more-btn" style="display:none;">Cargar más</button>
+  </div>
+</main>
+
+<!-- ============ PIE DE PAGINA ============ -->
 <footer class="social-footer">
-  <div class="social-title">Síguenos y contáctanos</div>
-  <div class="social-grid">
-    <a class="social-row" href="https://www.facebook.com/grupoimpohogar" target="_blank" rel="noopener">
-      <span class="social-icon">
-        <svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="20" fill="#1877F2"/><path fill="#fff" d="M22.7 40V21.7h6.1l.9-7.1h-7V10.1c0-2.1.6-3.5 3.6-3.5h3.8V.3C29.5.2 27.2 0 24.6 0c-5.5 0-9.3 3.4-9.3 9.6v5H9.1v7.1h6.2V40h7.4z"/></svg>
-      </span>
-      <span class="social-text"><b>Facebook</b><br>Grupo ImpoHogar</span>
-    </a>
-    <a class="social-row" href="https://instagram.com/grupoimpohogar" target="_blank" rel="noopener">
-      <span class="social-icon">
-        <svg viewBox="0 0 40 40"><defs><linearGradient id="igGrad" x1="0" y1="1" x2="1" y2="0"><stop offset="0%" stop-color="#FEE411"/><stop offset="25%" stop-color="#FB8A2E"/><stop offset="50%" stop-color="#E2425C"/><stop offset="75%" stop-color="#B23592"/><stop offset="100%" stop-color="#5F4FDD"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#igGrad)"/><rect x="10" y="10" width="20" height="20" rx="6" fill="none" stroke="#fff" stroke-width="2.2"/><circle cx="20" cy="20" r="5.2" fill="none" stroke="#fff" stroke-width="2.2"/><circle cx="26.3" cy="13.7" r="1.4" fill="#fff"/></svg>
-      </span>
-      <span class="social-text"><b>Instagram</b><br>@grupoimpohogar</span>
-    </a>
-    <a class="social-row" href="https://www.tiktok.com/@grupoimpohogar" target="_blank" rel="noopener">
-      <span class="social-icon">
-        <svg viewBox="0 0 40 40"><rect width="40" height="40" rx="10" fill="#000"/><path fill="#25F4EE" d="M23.5 8h3.4c.2 2.7 1.9 5 4.9 5.4v3.4c-1.9 0-3.6-.6-4.9-1.7v8.6c0 4.4-3.5 7.6-7.6 7.6-1.7 0-3.3-.6-4.6-1.6a7.6 7.6 0 0 1 8.8-11.9v3.6a3.9 3.9 0 1 0 2.7 3.7z" opacity=".85"/><path fill="#FE2C55" d="M22 8h3.4c.2 2.7 1.9 5 4.9 5.4v3.4c-1.9 0-3.6-.6-4.9-1.7v8.6c0 4.4-3.5 7.6-7.6 7.6a7.6 7.6 0 0 1-4.6-13.6 7.6 7.6 0 0 1 8.8 1.7v3.6a3.9 3.9 0 1 0 2.7 3.7z" opacity=".85"/><path fill="#fff" d="M22.7 8h3.4c.2 2.7 1.9 5 4.9 5.4v3.4c-1.9 0-3.6-.6-4.9-1.7v8.6c0 4.4-3.5 7.6-7.6 7.6a7.6 7.6 0 1 1 3-14.6v3.6a3.9 3.9 0 1 0 2.7 3.7z"/></svg>
-      </span>
-      <span class="social-text"><b>TikTok</b><br>@grupoimpohogar</span>
-    </a>
-    <a class="social-row" href="https://www.youtube.com/@GrupoImpoHogar" target="_blank" rel="noopener">
-      <span class="social-icon">
-        <svg viewBox="0 0 40 40"><rect width="40" height="40" rx="10" fill="#FF0000"/><path fill="#fff" d="M17 14.5l9 5.5-9 5.5z"/></svg>
-      </span>
-      <span class="social-text"><b>YouTube</b><br>@GrupoImpoHogar</span>
-    </a>
-    <a class="social-row" href="https://impohogarcr.com/" target="_blank" rel="noopener">
-      <span class="social-icon">
-        <svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="20" fill="#123a6b"/><circle cx="20" cy="20" r="12" fill="none" stroke="#fff" stroke-width="1.8"/><ellipse cx="20" cy="20" rx="5" ry="12" fill="none" stroke="#fff" stroke-width="1.8"/><line x1="8" y1="20" x2="32" y2="20" stroke="#fff" stroke-width="1.8"/><line x1="10.5" y1="13.5" x2="29.5" y2="13.5" stroke="#fff" stroke-width="1.5"/><line x1="10.5" y1="26.5" x2="29.5" y2="26.5" stroke="#fff" stroke-width="1.5"/></svg>
-      </span>
-      <span class="social-text"><b>Página web</b><br>impohogarcr.com</span>
-    </a>
-    <a class="social-row" href="https://wa.me/50685117171" target="_blank" rel="noopener">
-      <span class="social-icon">
-        <svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="20" fill="#25D366"/><path fill="#fff" d="M20 9.5c-5.8 0-10.5 4.7-10.5 10.5 0 1.9.5 3.6 1.4 5.2L9.5 30.5l5.5-1.4c1.5.8 3.2 1.3 5 1.3 5.8 0 10.5-4.7 10.5-10.5S25.8 9.5 20 9.5zm0 19.1c-1.6 0-3.1-.4-4.4-1.2l-.3-.2-3.3.9.9-3.2-.2-.3a8.6 8.6 0 1 1 7.3 4z"/><path fill="#fff" d="M25 22.5c-.3-.1-1.6-.8-1.8-.9-.2-.1-.4-.1-.6.1-.2.3-.7.9-.8 1-.1.2-.3.2-.6.1-.3-.1-1.2-.5-2.3-1.5-.8-.7-1.4-1.6-1.6-1.9-.2-.3 0-.5.1-.6.1-.1.3-.3.4-.5.1-.1.2-.3.2-.4.1-.2 0-.3 0-.5-.1-.1-.6-1.5-.8-2-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.2.3-.9.9-.9 2.2s1 2.6 1.1 2.8c.1.2 2 3.1 4.8 4.3.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.5-.1 1.6-.7 1.9-1.3.2-.6.2-1.1.2-1.3-.1-.1-.3-.2-.6-.3z"/></svg>
-      </span>
-      <span class="social-text"><b>Agente de ventas</b><br>(+506) 8511-7171</span>
-    </a>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <img class="brand-logo" src="img/logo.png" alt="Grupo Impohogar">
+      <img class="brand-logo-dark" src="img/logo-dark.png" alt="Grupo Impohogar">
+      <div class="social-title">Síguenos y contáctanos</div>
+    </div>
+    <div class="social-grid">
+      <a class="social-row" href="https://www.facebook.com/grupoimpohogar" target="_blank" rel="noopener">
+        <span class="social-icon"><svg viewBox="0 0 40 40" aria-hidden="true"><path fill="currentColor" d="M22.2 32V21.3h3.6l.5-4.2h-4.1v-2.7c0-1.2.3-2 2.1-2h2.2V8.7c-.4 0-1.7-.2-3.2-.2-3.2 0-5.4 2-5.4 5.6v3h-3.6v4.2h3.6V32h4.3z"/></svg></span>
+        <span class="social-text"><b>Facebook</b>Grupo ImpoHogar</span>
+      </a>
+      <a class="social-row" href="https://instagram.com/grupoimpohogar" target="_blank" rel="noopener">
+        <span class="social-icon"><svg viewBox="0 0 40 40" aria-hidden="true"><rect x="11" y="11" width="18" height="18" rx="5.5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="20" cy="20" r="4.3" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="25.2" cy="14.8" r="1.2" fill="currentColor"/></svg></span>
+        <span class="social-text"><b>Instagram</b>@grupoimpohogar</span>
+      </a>
+      <a class="social-row" href="https://www.tiktok.com/@grupoimpohogar" target="_blank" rel="noopener">
+        <span class="social-icon"><svg viewBox="0 0 40 40" aria-hidden="true"><path fill="currentColor" d="M22.4 10h3c.2 2.3 1.6 4.2 4.2 4.6v2.9c-1.6 0-3.1-.5-4.2-1.4v7.3c0 3.7-3 6.5-6.5 6.5a6.5 6.5 0 1 1 2.6-12.5v3.1a3.3 3.3 0 1 0 2.3 3.2V10z" transform="translate(-1 0)"/></svg></span>
+        <span class="social-text"><b>TikTok</b>@grupoimpohogar</span>
+      </a>
+      <a class="social-row" href="https://www.youtube.com/@GrupoImpoHogar" target="_blank" rel="noopener">
+        <span class="social-icon"><svg viewBox="0 0 40 40" aria-hidden="true"><rect x="9" y="12.5" width="22" height="15" rx="4.5" fill="none" stroke="currentColor" stroke-width="2"/><path fill="currentColor" d="M18 16.5l6 3.5-6 3.5z"/></svg></span>
+        <span class="social-text"><b>YouTube</b>@GrupoImpoHogar</span>
+      </a>
+      <a class="social-row" href="https://impohogarcr.com/" target="_blank" rel="noopener">
+        <span class="social-icon"><svg viewBox="0 0 40 40" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="20" cy="20" r="10"/><ellipse cx="20" cy="20" rx="4.2" ry="10"/><path d="M10 20h20M11.8 15h16.4M11.8 25h16.4"/></svg></span>
+        <span class="social-text"><b>Página web</b>impohogarcr.com</span>
+      </a>
+      <a class="social-row" href="https://wa.me/50685117171" target="_blank" rel="noopener">
+        <span class="social-icon"><svg viewBox="0 0 40 40" aria-hidden="true"><path fill="currentColor" d="M20 9.5c-5.8 0-10.5 4.7-10.5 10.5 0 1.9.5 3.6 1.4 5.2L9.5 30.5l5.5-1.4c1.5.8 3.2 1.3 5 1.3 5.8 0 10.5-4.7 10.5-10.5S25.8 9.5 20 9.5zm0 19.1c-1.6 0-3.1-.4-4.4-1.2l-.3-.2-3.3.9.9-3.2-.2-.3a8.6 8.6 0 1 1 7.3 4z"/><path fill="currentColor" d="M25 22.5c-.3-.1-1.6-.8-1.8-.9-.2-.1-.4-.1-.6.1-.2.3-.7.9-.8 1-.1.2-.3.2-.6.1-.3-.1-1.2-.5-2.3-1.5-.8-.7-1.4-1.6-1.6-1.9-.2-.3 0-.5.1-.6.1-.1.3-.3.4-.5.1-.1.2-.3.2-.4.1-.2 0-.3 0-.5-.1-.1-.6-1.5-.8-2-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.2.3-.9.9-.9 2.2s1 2.6 1.1 2.8c.1.2 2 3.1 4.8 4.3.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.5-.1 1.6-.7 1.9-1.3.2-.6.2-1.1.2-1.3-.1-.1-.3-.2-.6-.3z"/></svg></span>
+        <span class="social-text"><b>Agente de ventas</b>(+506) 8511-7171</span>
+      </a>
+    </div>
   </div>
 </footer>
 
 <div class="footer-space"></div>
-<button id="themeToggle" class="theme-toggle" onclick="toggleTheme()" title="Cambiar tema" aria-label="Cambiar tema claro/oscuro">🌙</button>
 
+<!-- ============ BARRA DEL PEDIDO (fija abajo) ============ -->
 <div id="orderBar">
   <div class="order-bar-main">
-    <div class="summary">Productos seleccionados: <b id="selCount">0</b> &nbsp;|&nbsp; Unidades totales: <b id="selUnits">0</b></div>
-    <button id="genBtn" disabled>Generar pedido (Excel)</button>
-    <span id="status"></span>
+    <div class="summary"><span class="summary-item"><b id="selCount">0</b> <span class="summary-lbl">Productos seleccionados</span></span><span class="summary-sep" aria-hidden="true"></span><span class="summary-item"><b id="selUnits">0</b> <span class="summary-lbl">Unidades totales</span></span></div>
+    <span id="status" role="status"></span>
+    <button id="genBtn" type="button" disabled>Generar pedido (Excel)</button>
   </div>
-  <button type="button" id="reviewCta" class="review-cta-btn" onclick="openFeedback()">En Grupo ImpoHogar valoramos su opinión. ¡Déjenos una reseña!</button>
+  <button type="button" id="reviewCta" class="review-cta-btn" onclick="openFeedback()">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 5.5h15v10h-8l-4.5 3.5v-3.5H4.5z"/></svg>
+    <span>En Grupo ImpoHogar valoramos su opinión. ¡Déjenos una reseña!</span>
+  </button>
 </div>
 
-<div id="lightbox" class="lightbox" onclick="if(event.target===this) closeLightbox()">
-  <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
-  <button class="lightbox-nav lightbox-prev" onclick="lightboxNav(-1, event)">‹</button>
-  <div class="lightbox-imgwrap">
-    <img id="lightboxImg" src="" alt="">
+<!-- ============ FICHA / VISOR DE FOTOS ============ -->
+<div id="lightbox" class="lightbox" onclick="if(event.target===this) closeLightbox()" role="dialog" aria-modal="true" aria-label="Ficha del producto">
+  <div class="lightbox-dialog">
+    <button class="lightbox-close" type="button" onclick="closeLightbox()" aria-label="Cerrar">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+    </button>
+    <div class="lightbox-media">
+      <div class="lightbox-tabs" id="lightboxTabs">
+        <button type="button" data-i="0" onclick="lightboxGoTo(0, event)">Foto</button>
+        <button type="button" data-i="1" onclick="lightboxGoTo(1, event)">Código de barras</button>
+      </div>
+      <button class="lightbox-nav lightbox-prev" type="button" onclick="lightboxNav(-1, event)" aria-label="Anterior">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+      </button>
+      <div class="lightbox-imgwrap">
+        <img id="lightboxImg" src="" alt="">
+      </div>
+      <button class="lightbox-nav lightbox-next" type="button" onclick="lightboxNav(1, event)" aria-label="Siguiente">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+      </button>
+      <div class="lightbox-caption" id="lightboxCaption"></div>
+      <div class="lightbox-hint">Toca o haz clic en la imagen para hacer zoom · usa las flechas para ver foto / código de barras</div>
+    </div>
+    <aside class="lightbox-info" id="lightboxInfo"></aside>
   </div>
-  <button class="lightbox-nav lightbox-next" onclick="lightboxNav(1, event)">›</button>
-  <div class="lightbox-caption" id="lightboxCaption"></div>
-  <div class="lightbox-hint">Toca o haz clic en la imagen para hacer zoom · usa las flechas para ver foto / código de barras</div>
 </div>
 
+<!-- ============ MODALES ============ -->
 <div id="thanksModal" class="thanks-modal">
   <div class="thanks-card">
-    <div class="thanks-icon">✓</div>
+    <div class="thanks-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
     <p class="thanks-text">¡Muchas gracias! Tu pedido ya está en nuestro sistema. En breve uno de nuestros agentes de ventas te ayudará con el proceso.</p>
-    <button class="thanks-btn" onclick="hideThankYouModal()">Aceptar</button>
+    <button class="thanks-btn" type="button" onclick="hideThankYouModal()">Aceptar</button>
   </div>
 </div>
 
 <div id="photosNoticeModal" class="thanks-modal">
   <div class="thanks-card">
-    <div class="thanks-icon">📸</div>
+    <div class="thanks-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8.5h3l1.5-2.5h7L17 8.5h3V19H4z"/><circle cx="12" cy="13.3" r="3.3"/></svg></div>
     <p class="thanks-text">Tenemos listas las fotos de los productos que pediste, en un archivo ZIP. ¡Úsalas para publicarlas o enviárselas a tus clientes!</p>
-    <button class="thanks-btn" onclick="downloadPendingPhotosZip()" style="margin-bottom:10px;">Descargar fotos</button><br>
-    <button class="thanks-btn" style="background:transparent;color:var(--muted);box-shadow:none;" onclick="hidePhotosNoticeModal()">Continuar</button>
+    <button class="thanks-btn" type="button" onclick="downloadPendingPhotosZip()">Descargar fotos</button>
+    <button class="thanks-btn thanks-btn-ghost" type="button" onclick="hidePhotosNoticeModal()">Continuar</button>
   </div>
 </div>
 
 <div id="sellerModal" class="thanks-modal" onclick="if(event.target===this) closeSellerModal()">
-  <div class="thanks-card" style="max-width:400px;">
-    <div class="thanks-icon">📤</div>
-    <p class="thanks-text" style="margin-bottom:6px;">Elige tu vendedor para enviarle tu pedido por WhatsApp</p>
-    <p style="font-size:12px;color:var(--muted);margin:0 0 18px;">Se abrirá un chat de WhatsApp con el mensaje listo — solo adjunta ahí el Excel que se acaba de descargar en tu dispositivo.</p>
-    <div style="display:flex;flex-direction:column;gap:10px;">
-      <button type="button" onclick="sendToSeller('roy')" style="display:flex;align-items:center;gap:12px;text-align:left;background:var(--celeste-light);border:1px solid var(--celeste);border-radius:12px;padding:12px 14px;cursor:pointer;">
-        <span style="width:38px;height:38px;border-radius:50%;background:#25D366;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="#fff"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.4A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.4-.7-1.6-.8-.2-.1-.4-.1-.6.1-.2.2-.6.8-.8.9-.1.2-.3.2-.5.1-.2-.1-1.1-.4-2-1.3-.7-.7-1.2-1.5-1.4-1.7-.1-.2 0-.4.1-.5l.4-.4c.1-.1.2-.3.2-.4.1-.1 0-.3 0-.4-.1-.1-.6-1.4-.8-1.9-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.4.1-.6.3-.2.2-.8.8-.8 2s.8 2.4 1 2.5c.1.2 1.8 2.8 4.4 3.9.6.3 1.1.4 1.5.5.6.2 1.2.2 1.6.1.5-.1 1.4-.6 1.6-1.1.2-.5.2-1 .1-1.1-.1-.1-.2-.2-.4-.3z"/></svg>
-        </span>
-        <span>
-          <b style="display:block;color:var(--navy);font-size:14px;">Roy Chacón</b>
-          <span style="font-size:12px;color:var(--muted);">(506) 8720-3737</span>
-        </span>
+  <div class="thanks-card seller-card">
+    <div class="thanks-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12 20 4l-4 16-4.5-6.5z"/><path d="M11.5 13.5 20 4"/></svg></div>
+    <p class="thanks-text thanks-text-tight">Elige tu vendedor para enviarle tu pedido por WhatsApp</p>
+    <p class="thanks-note">Se abrirá un chat de WhatsApp con el mensaje listo — solo adjunta ahí el Excel que se acaba de descargar en tu dispositivo.</p>
+    <div class="seller-list">
+      <button type="button" class="seller-option" onclick="sendToSeller('roy')">
+        <span class="seller-avatar">RC</span>
+        <span class="seller-text"><b>Roy Chacón</b><span>(506) 8720-3737</span></span>
+        <svg class="seller-wa" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.4A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.4-.7-1.6-.8-.2-.1-.4-.1-.6.1-.2.2-.6.8-.8.9-.1.2-.3.2-.5.1-.2-.1-1.1-.4-2-1.3-.7-.7-1.2-1.5-1.4-1.7-.1-.2 0-.4.1-.5l.4-.4c.1-.1.2-.3.2-.4.1-.1 0-.3 0-.4-.1-.1-.6-1.4-.8-1.9-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.4.1-.6.3-.2.2-.8.8-.8 2s.8 2.4 1 2.5c.1.2 1.8 2.8 4.4 3.9.6.3 1.1.4 1.5.5.6.2 1.2.2 1.6.1.5-.1 1.4-.6 1.6-1.1.2-.5.2-1 .1-1.1-.1-.1-.2-.2-.4-.3z"/></svg>
       </button>
-      <button type="button" onclick="sendToSeller('pedro')" style="display:flex;align-items:center;gap:12px;text-align:left;background:var(--celeste-light);border:1px solid var(--celeste);border-radius:12px;padding:12px 14px;cursor:pointer;">
-        <span style="width:38px;height:38px;border-radius:50%;background:#25D366;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-          <svg viewBox="0 0 24 24" width="20" height="20" fill="#fff"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.4A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.4-.7-1.6-.8-.2-.1-.4-.1-.6.1-.2.2-.6.8-.8.9-.1.2-.3.2-.5.1-.2-.1-1.1-.4-2-1.3-.7-.7-1.2-1.5-1.4-1.7-.1-.2 0-.4.1-.5l.4-.4c.1-.1.2-.3.2-.4.1-.1 0-.3 0-.4-.1-.1-.6-1.4-.8-1.9-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.4.1-.6.3-.2.2-.8.8-.8 2s.8 2.4 1 2.5c.1.2 1.8 2.8 4.4 3.9.6.3 1.1.4 1.5.5.6.2 1.2.2 1.6.1.5-.1 1.4-.6 1.6-1.1.2-.5.2-1 .1-1.1-.1-.1-.2-.2-.4-.3z"/></svg>
-        </span>
-        <span>
-          <b style="display:block;color:var(--navy);font-size:14px;">Pedro Alemán</b>
-          <span style="font-size:12px;color:var(--muted);">(506) 7234-9212</span>
-        </span>
+      <button type="button" class="seller-option" onclick="sendToSeller('pedro')">
+        <span class="seller-avatar">PA</span>
+        <span class="seller-text"><b>Pedro Alemán</b><span>(506) 7234-9212</span></span>
+        <svg class="seller-wa" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.4A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.4-.7-1.6-.8-.2-.1-.4-.1-.6.1-.2.2-.6.8-.8.9-.1.2-.3.2-.5.1-.2-.1-1.1-.4-2-1.3-.7-.7-1.2-1.5-1.4-1.7-.1-.2 0-.4.1-.5l.4-.4c.1-.1.2-.3.2-.4.1-.1 0-.3 0-.4-.1-.1-.6-1.4-.8-1.9-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.4.1-.6.3-.2.2-.8.8-.8 2s.8 2.4 1 2.5c.1.2 1.8 2.8 4.4 3.9.6.3 1.1.4 1.5.5.6.2 1.2.2 1.6.1.5-.1 1.4-.6 1.6-1.1.2-.5.2-1 .1-1.1-.1-.1-.2-.2-.4-.3z"/></svg>
       </button>
     </div>
-    <button class="thanks-btn" style="background:none;color:var(--muted);box-shadow:none;margin-top:14px;font-weight:600;" onclick="closeSellerModal()">Omitir</button>
+    <button class="thanks-btn thanks-btn-ghost" type="button" onclick="closeSellerModal()">Omitir</button>
   </div>
 </div>
 
 <div id="orderModal" class="order-modal" onclick="if(event.target===this) closeOrderReview()">
-  <div class="order-card">
+  <div class="order-card" role="dialog" aria-modal="true" aria-labelledby="orderModalTitle">
     <div class="order-header">
-      <h3>🛒 Mi pedido</h3>
-      <button onclick="closeOrderReview()">&times;</button>
+      <h3 id="orderModalTitle">Mi pedido</h3>
+      <button type="button" onclick="closeOrderReview()" aria-label="Cerrar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
     </div>
     <div class="order-list" id="orderList"></div>
     <div class="order-footer">
-      <div class="of-total"><b id="orderModalCount">0</b> productos &nbsp;|&nbsp; <b id="orderModalUnits">0</b> unidades</div>
-      <button onclick="closeOrderReview()">Seguir viendo el catálogo</button>
+      <div class="of-total"><b id="orderModalCount">0</b> productos &nbsp;·&nbsp; <b id="orderModalUnits">0</b> unidades</div>
+      <button type="button" onclick="closeOrderReview()">Seguir viendo el catálogo</button>
     </div>
   </div>
 </div>
 
 <div id="customerModal" class="order-modal" onclick="if(event.target===this) closeCustomerModal()">
-  <div class="order-card" style="max-width:400px;">
+  <div class="order-card order-card-narrow" role="dialog" aria-modal="true" aria-labelledby="customerModalTitle">
     <div class="order-header">
-      <h3>Tus datos</h3>
-      <button onclick="closeCustomerModal()">&times;</button>
+      <h3 id="customerModalTitle">Tus datos</h3>
+      <button type="button" onclick="closeCustomerModal()" aria-label="Cerrar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
     </div>
-    <div style="padding:18px 20px 6px;">
-      <p style="font-size:13px;color:var(--muted);margin:0 0 16px;">Antes de generar tu pedido, cuéntanos quién eres para poder atenderte mejor.</p>
-      <label style="font-size:12px;font-weight:700;color:var(--navy);">Nombre completo</label>
-      <input id="custName" type="text" placeholder="Tu nombre" style="width:100%;padding:10px 12px;margin:6px 0 14px;border-radius:10px;border:1px solid var(--border);font-size:14px;box-sizing:border-box;">
-      <label style="font-size:12px;font-weight:700;color:var(--navy);">Teléfono</label>
-      <input id="custPhone" type="tel" placeholder="Tu número de teléfono" style="width:100%;padding:10px 12px;margin:6px 0 4px;border-radius:10px;border:1px solid var(--border);font-size:14px;box-sizing:border-box;">
-      <div id="custError" style="color:#c94b3f;font-size:12px;min-height:16px;margin:4px 0 6px;"></div>
+    <div class="form-body">
+      <p class="form-intro">Antes de generar tu pedido, cuéntanos quién eres para poder atenderte mejor.</p>
+      <label class="field-label" for="custName">Nombre completo</label>
+      <input id="custName" class="field-input" type="text" placeholder="Tu nombre" autocomplete="name">
+      <label class="field-label" for="custPhone">Teléfono</label>
+      <input id="custPhone" class="field-input" type="tel" placeholder="Tu número de teléfono" autocomplete="tel">
+      <div id="custError" class="field-error" role="alert"></div>
     </div>
-    <div class="order-footer" style="justify-content:flex-end;">
-      <button onclick="confirmCustomerInfo()">Continuar y generar pedido</button>
+    <div class="order-footer order-footer-end">
+      <button type="button" onclick="confirmCustomerInfo()">Continuar y generar pedido</button>
     </div>
   </div>
 </div>
 
 <div id="calcModal" class="order-modal" onclick="if(event.target===this) closeCalculator()">
-  <div class="calc-card">
+  <div class="calc-card" role="dialog" aria-modal="true" aria-labelledby="calcModalTitle">
     <div class="calc-header">
-      <h3>🧮 Calculadora</h3>
-      <button onclick="closeCalculator()">&times;</button>
+      <h3 id="calcModalTitle">Calculadora</h3>
+      <button type="button" onclick="closeCalculator()" aria-label="Cerrar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
     </div>
     <div class="calc-display" id="calcDisplay">0</div>
     <div class="calc-grid">
       <button type="button" class="calc-clear" onclick="calcClear()">C</button>
-      <button type="button" class="calc-op" onclick="calcBackspace()">⌫</button>
+      <button type="button" class="calc-op" onclick="calcBackspace()" aria-label="Borrar">⌫</button>
       <button type="button" class="calc-op" onclick="calcOperator('%')">%</button>
       <button type="button" class="calc-op" onclick="calcOperator('÷')">÷</button>
 
@@ -257,15 +334,15 @@
 </div>
 
 <div id="historyModal" class="order-modal" onclick="if(event.target===this) closeOrderHistory()">
-  <div class="order-card">
+  <div class="order-card" role="dialog" aria-modal="true" aria-labelledby="historyModalTitle">
     <div class="order-header">
-      <h3>📋 Historial de pedidos</h3>
-      <button onclick="closeOrderHistory()">&times;</button>
+      <h3 id="historyModalTitle">Historial de pedidos</h3>
+      <button type="button" onclick="closeOrderHistory()" aria-label="Cerrar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
     </div>
     <div class="order-list" id="historyList"></div>
     <div class="order-footer">
-      <div class="of-total" style="font-size:11.5px;">Guardado solo en este dispositivo</div>
-      <button onclick="closeOrderHistory()">Cerrar</button>
+      <div class="of-total">Guardado solo en este dispositivo</div>
+      <button type="button" onclick="closeOrderHistory()">Cerrar</button>
     </div>
   </div>
 </div>
@@ -278,21 +355,21 @@
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.12.3/JsBarcode.all.min.js"></script>
 
 <!-- El ORDEN de estos archivos importa: no los reordenes. -->
-<script defer src="js/config.js?v=20260921c"></script>
-<script defer src="js/products.js?v=20260921c"></script>
-<script defer src="js/stock.js?v=20260921c"></script>
-<script defer src="js/data.js?v=20260921c"></script>
-<script defer src="js/utils.js?v=20260921c"></script>
-<script defer src="js/dupes.js?v=20260921c"></script>
-<script defer src="js/catalog.js?v=20260921c"></script>
-<script defer src="js/cart.js?v=20260921c"></script>
-<script defer src="js/theme.js?v=20260921c"></script>
-<script defer src="js/order.js?v=20260921c"></script>
-<script defer src="js/history.js?v=20260921c"></script>
-<script defer src="js/calculator.js?v=20260921c"></script>
-<script defer src="js/lightbox.js?v=20260921c"></script>
-<script defer src="js/gate.js?v=20260921c"></script>
-<script defer src="js/feedback.js?v=20260921c"></script>
-<script defer src="js/main.js?v=20260921c"></script>
+<script defer src="js/config.js?v=20260921e"></script>
+<script defer src="js/products.js?v=20260921e"></script>
+<script defer src="js/stock.js?v=20260921e"></script>
+<script defer src="js/data.js?v=20260921e"></script>
+<script defer src="js/utils.js?v=20260921e"></script>
+<script defer src="js/dupes.js?v=20260921e"></script>
+<script defer src="js/catalog.js?v=20260921e"></script>
+<script defer src="js/cart.js?v=20260921e"></script>
+<script defer src="js/theme.js?v=20260921e"></script>
+<script defer src="js/order.js?v=20260921e"></script>
+<script defer src="js/history.js?v=20260921e"></script>
+<script defer src="js/calculator.js?v=20260921e"></script>
+<script defer src="js/lightbox.js?v=20260921e"></script>
+<script defer src="js/gate.js?v=20260921e"></script>
+<script defer src="js/feedback.js?v=20260921e"></script>
+<script defer src="js/main.js?v=20260921e"></script>
 </body>
 </html>

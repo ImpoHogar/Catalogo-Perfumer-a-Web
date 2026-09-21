@@ -51,19 +51,19 @@ function renderOrderHistory() {
   }
   list.innerHTML = history.map((order, idx) => {
     const itemsHtml = order.items.map(it =>
-      `<div style="font-size:11.5px;color:var(--text);padding:2px 0;">• ${it.qty} × ${escapeHtml(it.name)}</div>`
+      `<div class="history-line"><b>${it.qty}×</b><span>${escapeHtml(it.name)}</span></div>`
     ).join('');
     return `
-      <div class="order-item" style="flex-direction:column;align-items:stretch;gap:6px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div class="history-item">
+        <div class="history-top">
           <div>
-            <div class="oi-name">${escapeHtml(order.name || 'Sin nombre')}</div>
-            <div class="oi-code">${escapeHtml(order.phone || '')} &nbsp;|&nbsp; ${formatHistoryDate(order.date)}</div>
+            <div class="history-name">${escapeHtml(order.name || 'Sin nombre')}</div>
+            <div class="history-meta">${escapeHtml(order.phone || '')} &nbsp;·&nbsp; ${formatHistoryDate(order.date)}</div>
           </div>
-          <button type="button" class="oi-remove" style="color:var(--navy);font-weight:700;" onclick="repeatOrder(${idx})">Pedir de nuevo</button>
+          <button type="button" class="history-repeat" onclick="repeatOrder(${idx})">Pedir de nuevo</button>
         </div>
-        <div style="font-size:11px;color:var(--muted);">${order.items.length} productos · ${order.totalUnits} unidades</div>
-        <div>${itemsHtml}</div>
+        <div class="history-count">${order.items.length} productos · ${order.totalUnits} unidades</div>
+        <div class="history-lines">${itemsHtml}</div>
       </div>`;
   }).join('');
 }

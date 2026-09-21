@@ -111,19 +111,24 @@ function dupePanelHTML(pid) {
     const qty = qtyMap[rp.id] || 0;
     const qtyControls = agotado
       ? `<span class="dupe-item-agotado">Sin stock</span>`
-      : `<button type="button" onclick="event.stopPropagation(); dupeChangeQty(${rp.id}, -1)">−</button>
+      : `<button type="button" onclick="event.stopPropagation(); dupeChangeQty(${rp.id}, -1)" aria-label="Quitar una unidad">−</button>
          <input type="number" min="0" inputmode="numeric" pattern="[0-9]*" value="${qty}" id="dupe-qty-${rp.id}"
                 onclick="event.stopPropagation()" onfocus="this.select()"
                 onchange="event.stopPropagation(); dupeSetQty(${rp.id}, this.value)">
-         <button type="button" onclick="event.stopPropagation(); dupeChangeQty(${rp.id}, 1)">+</button>`;
+         <button type="button" onclick="event.stopPropagation(); dupeChangeQty(${rp.id}, 1)" aria-label="Agregar una unidad">+</button>`;
     return `<div class="dupe-item">
       <img src="${imgSrc}" alt="" onclick="event.stopPropagation(); jumpToProduct(${rp.id})">
-      <div class="dupe-item-text" onclick="event.stopPropagation(); jumpToProduct(${rp.id})"><div class="dupe-item-brand">${escapeHtml(rp.brand)} · ${label}</div><div class="dupe-item-name">${escapeHtml(rp.name)}</div></div>
+      <div class="dupe-item-text" onclick="event.stopPropagation(); jumpToProduct(${rp.id})" title="Ir a este producto"><div class="dupe-item-brand">${escapeHtml(rp.brand)} · ${label}</div><div class="dupe-item-name">${escapeHtml(rp.name)}</div></div>
       <div class="dupe-item-qty">${qtyControls}</div>
     </div>`;
   }).join('');
   return `
-    <button type="button" class="dupe-btn" onclick="event.stopPropagation(); toggleDupePanel(${pid})">🔄 Dupe / Inspiración</button>
+    <button type="button" class="dupe-btn" onclick="event.stopPropagation(); toggleDupePanel(${pid})" aria-controls="dupe-panel-${pid}">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h13l-3.5-3.5M20 16H7l3.5 3.5"/></svg>
+      Dupe / Inspiración
+      <span class="dupe-count">${rels.length}</span>
+      <svg class="dupe-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+    </button>
     <div class="dupe-panel" id="dupe-panel-${pid}">
       <div class="dupe-label">Relacionado con:</div>
       ${items}

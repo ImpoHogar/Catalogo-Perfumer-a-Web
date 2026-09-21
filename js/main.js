@@ -22,6 +22,45 @@ function renderBrandMarquee() {
   track.innerHTML = logosHTML + logosHTML;
 }
 
+// ============================================================
+//  ENCABEZADO AL HACER SCROLL
+// ============================================================
+//  Cuando la pagina baja un poco, el encabezado fijo muestra una
+//  linea inferior y una sombra suave para separarse del contenido.
+// ============================================================
+function initHeaderScroll() {
+  const header = document.getElementById('siteHeader');
+  if (!header) return;
+  let ticking = false;
+  const update = () => {
+    header.classList.toggle('is-scrolled', window.scrollY > 8);
+    ticking = false;
+  };
+  window.addEventListener('scroll', () => {
+    if (!ticking) { ticking = true; requestAnimationFrame(update); }
+  }, { passive: true });
+  update();
+}
+
+// Tecla Escape: cierra la ventana que este abierta (pedido, datos,
+// calculadora o historial). No toca los avisos de "gracias" para no
+// saltarse los pasos despues de generar un pedido.
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  const abiertos = {
+    orderModal: typeof closeOrderReview === 'function' ? closeOrderReview : null,
+    customerModal: typeof closeCustomerModal === 'function' ? closeCustomerModal : null,
+    calcModal: typeof closeCalculator === 'function' ? closeCalculator : null,
+    historyModal: typeof closeOrderHistory === 'function' ? closeOrderHistory : null
+  };
+  Object.keys(abiertos).forEach(id => {
+    const el = document.getElementById(id);
+    if (el && el.classList.contains('open') && abiertos[id]) abiertos[id]();
+  });
+  const fb = document.getElementById('fbModal');
+  if (fb && fb.classList.contains('open') && typeof closeFeedback === 'function') closeFeedback();
+});
+
 document.addEventListener('DOMContentLoaded', () => {
   try {
     initTheme();
@@ -52,6 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
     lbImg.addEventListener('touchstart', touchZoomStart, { passive: false });
     lbImg.addEventListener('touchmove', touchZoomMove, { passive: false });
     lbImg.addEventListener('touchend', touchZoomEnd);
+    initHeaderScroll();
   } catch (err) {
     console.error(err);
     document.getElementById('count').textContent = 'Error cargando catálogo: ' + err.message;
