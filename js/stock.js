@@ -14,7 +14,7 @@
 //  Nota: 0883006005514 (CALVIN.K ETERNITY) sigue sin aparecer en el
 //  sistema de inventario, se mantuvo su cantidad anterior (180).
 //
-//  Ultima actualizacion: 20260921a (ERREEEEE.XLSX, filtrado contra catalogo)
+//  Ultima actualizacion: 20260921b (XZX.XLSX, filtrado contra catalogo)
 // ============================================================
 const STOCK = {
   "8057971187911": 38,
@@ -2120,6 +2120,6 @@ const STOCK = {
   "844061006911": 45,
   "7640496670023": 30,
   "8057971182053": 89,
-  "8011003864089": 144,
-  "8057971180912": 72
+  "8011003864089": 135,
+  "8057971180912": 64
 };
