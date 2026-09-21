@@ -22,6 +22,15 @@ function isProductNew(p) {
   return diffDays >= 0 && diffDays <= NEW_PRODUCT_DAYS;
 }
 
+// Un producto entra en la vista/banner de "Nuevos Ingresos" si es un
+// Nuevo Ingreso normal (dateAdded) O si esta en el lote de baja
+// rotacion activo esta semana (ver LOW_ROTATION_BATCHES en config.js).
+// Son dos listas independientes: se combinan solo para decidir que se
+// muestra en esta seccion, sin mezclar los datos de cada una.
+function isInNuevosIngresosView(p) {
+  return isProductNew(p) || (typeof isLowRotationActive === 'function' && isLowRotationActive(p));
+}
+
 // ============================================================
 //  BANNER PRINCIPAL DE NUEVOS INGRESOS (reemplaza al boton
 //  "Nuevos Ingresos" del toolbar)
@@ -37,7 +46,7 @@ function renderHeroNuevos() {
   const hero = document.getElementById('heroNuevos');
   if (!hero) return;
 
-  const nuevos = VISIBLE_PRODUCTS.filter(isProductNew).slice(0, 5);
+  const nuevos = VISIBLE_PRODUCTS.filter(isInNuevosIngresosView).slice(0, 10);
 
   if (heroNuevosTimer) { clearInterval(heroNuevosTimer); heroNuevosTimer = null; }
 
@@ -226,7 +235,7 @@ function computeFiltered() {
       return matchText && DIA_DEL_NINO_CATEGORIES.includes(p.brand);
     }
     if (nuevosIngresosMode) {
-      return matchText && isProductNew(p);
+      return matchText && isInNuevosIngresosView(p);
     }
     const matchBrand = !brand || p.brand === brand;
     const matchTipoGenero = selectedTipoGenero.size === 0 || selectedTipoGenero.has(getTipoGeneroBucket(p));
