@@ -220,6 +220,11 @@ body.dark .btn-primary:hover { filter: brightness(.94); }
   color: var(--vt-ink);
   font-family: var(--font-ui);
 }
+/* Cada bloque conserva su alto propio. Sin esto el navegador aplasta a
+   los hijos de una columna flex cuando el contenido es mas alto que la
+   pantalla, y a la cinta de texto (que lleva overflow:hidden) le
+   recortaba las letras por abajo. */
+.vitrina > * { flex-shrink: 0; }
 .vitrina.vt-saliendo { animation: vtSalir .48s var(--ease) forwards; }
 @keyframes vtSalir { to { opacity: 0; transform: scale(1.015); } }
 
