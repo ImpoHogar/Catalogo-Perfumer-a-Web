@@ -18,7 +18,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/styles.css?v=20260921e">
+<link rel="stylesheet" href="css/styles.css?v=20260923a">
 </head>
 <body>
 <noscript>
@@ -52,6 +52,41 @@
     <button id="gateBtn" type="button">Entrar</button>
     <div id="gateError" role="alert"></div>
   </div>
+</div>
+
+<!-- ============ VITRINA DE ENTRADA ============ -->
+<!-- Va DESPUES de #gate a proposito: comparte su z-index, asi queda
+     dibujada encima y al esconderse aparece la pantalla de clave de
+     siempre, sin tocar su HTML ni su logica. -->
+<div id="vitrina" class="vitrina" role="region" aria-label="Vitrina de Grupo ImpoHogar">
+
+  <div class="vt-topbar">
+    <img src="img/logo-dark.png" alt="Grupo Impohogar" class="vt-logo">
+    <button type="button" class="vt-skip" onclick="entrarAlCatalogo()" aria-label="Entrar al catálogo">
+      Entrar<span class="vt-skip-long"> al catálogo</span>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </button>
+  </div>
+
+  <header class="vt-hero">
+    <p class="vt-eyebrow">Distribución mayorista de perfumería</p>
+    <h1 class="vt-title">Antes de entrar,<br><em>pase por la vitrina.</em></h1>
+    <p class="vt-lead">Una muestra de lo que hay hoy en bodega: los ingresos más recientes, fragancias de hombre y mujer, y estuchería.</p>
+  </header>
+
+  <div class="vt-ticker" aria-hidden="true">
+    <div class="vt-ticker-track" id="vtTickerTrack"></div>
+  </div>
+
+  <div class="vt-rows" id="vtRows"></div>
+
+  <footer class="vt-foot">
+    <button type="button" class="vt-cta" onclick="entrarAlCatalogo()">
+      Entrar al catálogo
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </button>
+    <p class="vt-foot-note">Acceso con clave · exclusivo para clientes mayoristas</p>
+  </footer>
 </div>
 
 <div id="mainContent" style="display:none;">
@@ -355,7 +390,7 @@
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.12.3/JsBarcode.all.min.js"></script>
 
 <!-- El ORDEN de estos archivos importa: no los reordenes. -->
-<script defer src="js/config.js?v=20260921e"></script>
+<script defer src="js/config.js?v=20260923a"></script>
 <script defer src="js/products.js?v=20260921e"></script>
 <script defer src="js/stock.js?v=20260921e"></script>
 <script defer src="js/data.js?v=20260921e"></script>
@@ -368,6 +403,7 @@
 <script defer src="js/history.js?v=20260921e"></script>
 <script defer src="js/calculator.js?v=20260921e"></script>
 <script defer src="js/lightbox.js?v=20260921e"></script>
+<script defer src="js/showcase.js?v=20260923a"></script>
 <script defer src="js/gate.js?v=20260921e"></script>
 <script defer src="js/feedback.js?v=20260921e"></script>
 <script defer src="js/main.js?v=20260921e"></script>

@@ -7,6 +7,7 @@
    02. Base
    03. Botones y controles compartidos
    04. Bienvenida y pantalla de clave
+   04b. Vitrina de entrada (escaparate previo a la clave)
    05. Encabezado
    06. Banner Nuevos Ingresos
    07. Carrusel de marcas
@@ -192,6 +193,249 @@ body.dark .btn-primary:hover { filter: brightness(.94); }
 #gateBtn:hover { background: #fff; }
 #gateBtn:active { transform: translateY(1px); }
 #gateError { min-height: 18px; margin-top: 12px; font-size: 13px; color: #E88C7A; }
+
+/* ---------- 04b. Vitrina de entrada ---------- */
+/* Pantalla de escaparate que se ve ANTES de la clave. Usa la misma
+   paleta oscura del catalogo (los mismos hex que body.dark) para que
+   no parezca una pagina de otro sitio, pero no es negra plana: las
+   fotos van sobre platos de marfil, igual que en el catalogo. */
+.vitrina {
+  --vt-ink: #EEEBE5;
+  --vt-ink-2: #C5CBD4;
+  --vt-muted: #8F99A8;
+  --vt-line: rgba(238,235,229,.13);
+  --vt-gold: #D8B872;
+  --vt-stage: #EEEBE5;
+  --vt-card-w: 210px;
+  --vt-gap: 18px;
+
+  position: fixed; inset: 0; z-index: 999;
+  overflow-y: auto; overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  display: flex; flex-direction: column;
+  background:
+    radial-gradient(900px 540px at 12% 4%, rgba(41,171,226,.13), transparent 62%),
+    radial-gradient(780px 540px at 88% 96%, rgba(216,184,114,.10), transparent 64%),
+    #0A0E14;
+  color: var(--vt-ink);
+  font-family: var(--font-ui);
+}
+.vitrina.vt-saliendo { animation: vtSalir .48s var(--ease) forwards; }
+@keyframes vtSalir { to { opacity: 0; transform: scale(1.015); } }
+
+/* Barra superior */
+.vt-topbar {
+  position: sticky; top: 0; z-index: 3;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding: 16px clamp(16px, 4vw, 44px);
+  background: linear-gradient(#0A0E14 62%, rgba(10,14,20,0));
+}
+.vt-logo { height: 30px; width: auto; }
+.vt-skip {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 9px 4px; border: none; background: none;
+  color: var(--vt-muted);
+  font-size: 12px; font-weight: 500; letter-spacing: .14em; text-transform: uppercase;
+  transition: color var(--t-fast);
+}
+.vt-skip svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; transition: transform var(--t-fast); }
+.vt-skip:hover { color: var(--vt-ink); }
+.vt-skip:hover svg { transform: translateX(3px); }
+
+/* Titular */
+.vt-hero {
+  max-width: 720px;
+  padding: clamp(10px, 2.4vh, 26px) clamp(16px, 4vw, 44px) 0;
+}
+.vt-eyebrow {
+  margin: 0 0 13px;
+  font-size: 11px; font-weight: 500; letter-spacing: .3em; text-transform: uppercase;
+  color: var(--vt-gold);
+}
+.vt-title {
+  margin: 0;
+  font-family: var(--font-display); font-weight: 400;
+  font-size: clamp(32px, 4.4vw, 52px); line-height: 1.05; letter-spacing: -.012em;
+}
+.vt-title em { font-style: italic; color: var(--vt-ink-2); }
+.vt-lead {
+  margin: 14px 0 0; max-width: 500px;
+  font-size: 14.5px; line-height: 1.55; color: var(--vt-muted);
+}
+
+/* Cinta de texto que se desplaza despacio */
+.vt-ticker {
+  margin-top: clamp(16px, 2.6vh, 28px);
+  padding: 12px 0;
+  overflow: hidden;
+  border-top: 1px solid var(--vt-line); border-bottom: 1px solid var(--vt-line);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
+          mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
+}
+.vt-ticker-track { display: flex; align-items: center; width: max-content; animation: vtTicker 62s linear infinite; }
+.vt-ticker-word { font-size: 11.5px; font-weight: 500; letter-spacing: .34em; text-transform: uppercase; color: var(--vt-ink-2); white-space: nowrap; }
+.vt-ticker-dot { margin: 0 22px; color: var(--vt-gold); opacity: .65; }
+@keyframes vtTicker { from { transform: translateX(0); } to { transform: translateX(-33.333%); } }
+
+/* Filas. El pie no es flotante sino pegajoso: mientras se scrollea tapa
+   un poco, pero al llegar al final se acomoda debajo de la ultima fila,
+   asi que nunca queda contenido escondido. */
+.vt-rows { padding: clamp(16px, 2.6vh, 30px) 0 0; }
+.vt-row { margin-bottom: clamp(22px, 3.2vh, 40px); }
+.vt-row:last-child { margin-bottom: 0; }
+.vt-row-head {
+  display: flex; align-items: center; gap: 16px;
+  padding: 0 clamp(16px, 4vw, 44px) 16px;
+}
+.vt-row-title {
+  margin: 0; flex-shrink: 0;
+  font-size: 12px; font-weight: 600; letter-spacing: .26em; text-transform: uppercase;
+  color: var(--vt-ink);
+}
+.vt-row-rule { flex: 1; height: 1px; background: var(--vt-line); }
+.vt-row-count {
+  flex-shrink: 0;
+  font-size: 11px; font-weight: 500; letter-spacing: .14em;
+  color: var(--vt-gold);
+  font-variant-numeric: tabular-nums;
+}
+.vt-row-nav { display: flex; gap: 6px; flex-shrink: 0; }
+.vt-arrow {
+  width: 34px; height: 34px;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--vt-line); border-radius: 50%;
+  background: transparent; color: var(--vt-ink-2);
+  transition: background-color var(--t-fast), color var(--t-fast), border-color var(--t-fast);
+}
+.vt-arrow svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.vt-arrow:hover { background: rgba(238,235,229,.08); color: var(--vt-ink); border-color: rgba(238,235,229,.28); }
+.vt-arrow:active { transform: translateY(1px); }
+
+.vt-viewport {
+  overflow: hidden;
+  cursor: grab;
+  touch-action: pan-y;                 /* el dedo sigue pudiendo scrollear la pagina */
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 9%, #000 91%, transparent);
+          mask-image: linear-gradient(90deg, transparent, #000 9%, #000 91%, transparent);
+}
+.vt-viewport.is-drag { cursor: grabbing; }
+/* Sin padding a proposito: la pista se envuelve cada vuelta exacta y
+   cualquier padding dejaria un hueco visible al dar la vuelta. Los
+   bordes los resuelve el degradado de arriba. */
+.vt-track {
+  display: flex; align-items: flex-start;
+  column-gap: var(--vt-gap);
+  width: max-content;
+  will-change: transform;
+}
+
+/* Tarjeta */
+.vt-card {
+  width: var(--vt-card-w); flex-shrink: 0;
+  -webkit-user-select: none; user-select: none;
+}
+.vt-plate {
+  position: relative; overflow: hidden;
+  aspect-ratio: 1 / 1;
+  border-radius: var(--r-sm);
+  background: var(--vt-stage);
+  box-shadow: 0 1px 0 rgba(255,255,255,.06);
+  transition: transform var(--t-med) var(--ease), box-shadow var(--t-med) var(--ease);
+}
+.vt-plate::after {
+  content: ''; position: absolute; inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px rgba(216,184,114,0);
+  transition: box-shadow var(--t-med);
+  pointer-events: none;
+}
+.vt-plate img {
+  display: block; width: 100%; height: 100%;
+  object-fit: contain; padding: 11%;
+  mix-blend-mode: multiply;
+  transition: transform .7s var(--ease);
+}
+.vt-text { padding: 13px 2px 0; }
+.vt-brand {
+  display: block;
+  font-size: 10px; font-weight: 500; letter-spacing: .22em; text-transform: uppercase;
+  color: var(--vt-gold);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.vt-name {
+  margin: 6px 0 0;
+  font-size: 13px; font-weight: 400; line-height: 1.35;
+  color: var(--vt-ink);
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+/* Las notas aparecen solo al pasar el mouse o al tocar la tarjeta */
+.vt-notes {
+  margin: 0;
+  display: grid; grid-template-rows: 0fr;
+  opacity: 0;
+  transition: grid-template-rows var(--t-med) var(--ease), opacity var(--t-med), margin var(--t-med);
+}
+.vt-notes > span {
+  overflow: hidden;
+  font-size: 11.5px; line-height: 1.45; color: var(--vt-muted);
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+}
+@media (hover: hover) {
+  .vt-card:hover .vt-plate { transform: translateY(-6px); box-shadow: 0 22px 44px -22px rgba(0,0,0,.85); }
+  .vt-card:hover .vt-plate::after { box-shadow: inset 0 0 0 1px rgba(216,184,114,.5); }
+  .vt-card:hover .vt-plate img { transform: scale(1.05); }
+  .vt-card:hover .vt-notes { grid-template-rows: 1fr; opacity: 1; margin-top: 7px; }
+}
+.vt-card.is-open .vt-plate { transform: translateY(-6px); box-shadow: 0 22px 44px -22px rgba(0,0,0,.85); }
+.vt-card.is-open .vt-plate::after { box-shadow: inset 0 0 0 1px rgba(216,184,114,.5); }
+.vt-card.is-open .vt-notes { grid-template-rows: 1fr; opacity: 1; margin-top: 7px; }
+
+/* Pie con el boton de entrada */
+.vt-foot {
+  position: sticky; bottom: 0;
+  margin-top: auto;
+  padding: 40px clamp(16px, 4vw, 44px) calc(22px + env(safe-area-inset-bottom, 0px));
+  text-align: center;
+  background: linear-gradient(rgba(10,14,20,0), #0A0E14 46%);
+}
+.vt-cta {
+  display: inline-flex; align-items: center; justify-content: center; gap: 12px;
+  min-width: 280px; max-width: 100%; height: 52px; padding: 0 30px;
+  border: none; border-radius: 999px;
+  background: #ECE6DA; color: #0A0E14;
+  font-size: 14px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase;
+  box-shadow: 0 16px 40px -18px rgba(236,230,218,.55);
+  transition: background-color var(--t-fast), transform var(--t-fast), box-shadow var(--t-fast);
+}
+.vt-cta svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; transition: transform var(--t-fast); }
+.vt-cta:hover { background: #fff; box-shadow: 0 20px 48px -18px rgba(255,255,255,.6); }
+.vt-cta:hover svg { transform: translateX(4px); }
+.vt-cta:active { transform: translateY(1px); }
+.vt-foot-note { margin: 11px 0 0; font-size: 11px; letter-spacing: .1em; color: var(--vt-muted); }
+
+@media (max-width: 900px) { .vitrina { --vt-card-w: 176px; --vt-gap: 14px; } }
+@media (max-width: 620px) {
+  .vitrina { --vt-card-w: 148px; --vt-gap: 12px; }
+  .vt-skip { font-size: 11px; letter-spacing: .12em; }
+  .vt-skip-long { display: none; }
+  .vt-logo { height: 26px; }
+  .vt-lead { font-size: 14px; }
+  .vt-row-head { gap: 12px; }
+  .vt-row-title { font-size: 11px; letter-spacing: .2em; }
+  .vt-arrow { width: 32px; height: 32px; }
+  .vt-cta { min-width: 0; width: 100%; height: 52px; font-size: 13px; letter-spacing: .12em; }
+}
+@media (max-width: 380px) { .vitrina { --vt-card-w: 132px; } }
+
+/* Si el cliente pidio menos movimiento: nada se mueve solo y cada fila
+   se navega con el dedo o con las flechas, como un carrusel normal. */
+@media (prefers-reduced-motion: reduce) {
+  .vt-ticker-track { animation: none; }
+  .vt-row--estatico .vt-viewport { overflow-x: auto; scroll-behavior: smooth; scrollbar-width: none; touch-action: pan-x pan-y; }
+  .vt-row--estatico .vt-viewport::-webkit-scrollbar { display: none; }
+  .vt-row--estatico .vt-track { transform: none !important; padding: 0 clamp(16px, 4vw, 44px); }
+  .vitrina.vt-saliendo { animation: none; opacity: 0; }
+}
 
 /* ---------- 05. Encabezado ---------- */
 .site-header {

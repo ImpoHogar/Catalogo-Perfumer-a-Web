@@ -51,6 +51,21 @@ const DIA_DEL_NINO_CATEGORIES = ["NEVADA", "GRANDEUR TUBBEES"];
 // Cuantos pedidos guarda el historial local de cada cliente.
 const ORDER_HISTORY_LIMIT = 20;
 
+// ============================================================
+//  VITRINA DE ENTRADA (pantalla previa a la clave)
+// ============================================================
+//  Cuantos productos se muestran en cada fila de la vitrina.
+//  Las filas salen solas de las categorias del catalogo, no hay
+//  ninguna lista escrita a mano: subir o bajar este numero es lo
+//  unico que hay que tocar para mostrar mas o menos productos.
+//
+//  La fila de "Nuevos ingresos" NO usa este limite: siempre muestra
+//  todos los nuevos ingresos que haya, sean 5 o sean 50.
+//
+//  Ojo con subirlo mucho: cada producto de mas son una foto y una
+//  tarjeta mas que cargar antes de que el cliente entre.
+const VITRINA_MAX_POR_FILA = 40;
+
 // Con fotos publicadas en img/: habilita el ZIP de fotos del pedido.
 const HAS_PHOTOS = true;
 
