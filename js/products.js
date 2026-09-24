@@ -3,10 +3,14 @@
 // ============================================================
 //  Un producto por linea. Las CANTIDADES no viven aca: estan en
 //  js/stock.js y se pegan a cada producto al cargar la pagina.
-//  Total: 2152 productos (2130 con foto).
-//  Actualizado el 23/9/2026: se agregaron los 47 productos del
-//  envio 2309 (ids 5435 a 5481) y los Nuevos Ingresos
-//  quedaron apuntando a ese envio.
+//  Total: 2155 productos (2133 con foto).
+//  Actualizado el 23/9/2026: entraron los 50 productos del envio
+//  2309 (ids 5435 a 5484) y los Nuevos Ingresos quedaron
+//  apuntando a ese envio.
+//
+//  OJO: un mismo perfume con DOS codigos de barras distintos va como
+//  DOS productos separados, cada uno con su cantidad. Por eso hay
+//  pares como CK BE 200ML (codigos 088300104437 y 088300604432).
 // ============================================================
 
 const PRODUCTS = [
@@ -409,7 +413,7 @@ const PRODUCTS = [
   {"id":861,"brand":"BVLGARI","code":"783320416101","name":"BVLGARI MAN TERRAE ESSENCE 100ML EDP","tipo":"Perfume","genero":"Hombre","img":true,"notes":["Cidra", "Calamansi", "Vetiver", "Raíz de lirio", "Notas terrosas", "Styrax"]},
   {"id":865,"brand":"BVLGARI","code":"783320425486","name":"BVLGARI OMNIA AMETHISTE EDT 100ML","tipo":"Perfume","genero":"Mujer","img":true,"notes":["Notas verdes", "Toronja rosada", "Iris", "Rosa de Bulgaria", "Heliotropo", "Notas amaderadas"]},
   {"id":866,"brand":"BVLGARI","code":"783320420627","name":"BVLGARI OMNIA AMETHYSTE 50ML EDT M","tipo":"Perfume","genero":"Mujer","img":true,"notes":["Notas verdes", "Toronja rosada", "Iris", "Rosa de Bulgaria", "Heliotropo", "Notas amaderadas"]},
-  {"id":870,"brand":"BVLGARI","code":"783320425493","name":"BVLGARI OMNIA CORAL EDT 100ML","tipo":"Perfume","genero":"Mujer","img":true,"dateAdded":"2026-09-23","notes":["Bergamota", "Bayas de goji", "Nenúfar", "Hibisco", "Granada", "Almizcle", "Cedro"]},
+  {"id":870,"brand":"BVLGARI","code":"783320425493","name":"BVLGARI OMNIA CORAL EDT 100ML","tipo":"Perfume","genero":"Mujer","img":true,"notes":["Bergamota", "Bayas de goji", "Nenúfar", "Hibisco", "Granada", "Almizcle", "Cedro"]},
   {"id":874,"brand":"BVLGARI","code":"783320420566","name":"BVLGARI OMNIA CRYSTALLINE M EDT 100ML","tipo":"Perfume","genero":"Mujer","img":true,"notes":["Bambú", "Pera", "Flor de loto", "Té", "Casia", "Almizcle", "Madera de gaiac", "Musgo de roble"]},
   {"id":880,"brand":"BVLGARI","code":"783320418952","name":"BVLGARI POR HOMME EDT 100ML","tipo":"Perfume","genero":"Hombre","img":true,"notes":["Té", "Aldehídos", "Bergamota", "Lavanda", "Azahar", "Mandarina", "Flor del moscadero", "Pimienta", "Madera de gaiac", "Iris", "Palo de rosa brasileño", "Cilantro", "Ciclamen", "Cardamomo", "Geranio", "Clavel", "Almizcle", "Vetiver", "Cedro", "Musgo de roble", "Ámbar", "Haba tonka"]},
   {"id":882,"brand":"BVLGARI","code":"783320425394","name":"BVLGARI POUR HOMME EDT 100ML","tipo":"Perfume","genero":"Hombre","img":true,"notes":["Té", "Aldehídos", "Bergamota", "Lavanda", "Azahar", "Mandarina", "Flor del moscadero", "Pimienta", "Madera de gaiac", "Iris", "Palo de rosa brasileño", "Cilantro", "Ciclamen", "Cardamomo", "Geranio", "Clavel", "Almizcle", "Vetiver", "Cedro", "Musgo de roble", "Ámbar", "Haba tonka"]},
@@ -425,7 +429,7 @@ const PRODUCTS = [
   {"id":910,"brand":"CALVIN KLEIN","code":"3616303476805","name":"CALVIN K. ETERNITY AROM INTENSE 100ML","tipo":"Perfume","genero":"Hombre","img":true,"notes":["Bergamota", "Cardamomo", "Salvia", "Lavanda", "Jazmín", "Iris", "Sándalo", "Ámbar", "Almizcle"]},
   {"id":914,"brand":"CALVIN KLEIN","code":"088300073627","name":"CALVIN KLEIN TRUTH 100ML EDT H","tipo":"Perfume","genero":"Hombre","img":true,"notes":["Albahaca", "Cardamomo", "Hojas verdes", "Helecho", "Resinas", "Cedro rojo", "Pachulí", "Maderas exóticas"]},
   {"id":916,"brand":"CALVIN KLEIN","code":"3607340213267","name":"CALVIN.K BEAUTY 100ML EDP M","tipo":"Perfume","genero":"Mujer","img":true,"notes":["Almizcle ambreta", "Jazmín", "Cedro de Virginia"]},
-  {"id":918,"brand":"CALVIN KLEIN","code":"088300104437","name":"CALVIN.K CK BE 200ML EDT H","tipo":"Perfume","genero":"Hombre","img":true,"dateAdded":"2026-09-23","notes":["Lavanda", "Notas verdes", "Bergamota", "Menta", "Enebro de Virginia", "Mandarina", "Hierba verde", "Jazmín", "Durazno", "Fresia", "Magnolia", "Orquídea", "Almizcle", "Sándalo", "Cedro", "Vainilla", "Ámbar", "Opopónaco"]},
+  {"id":918,"brand":"CALVIN KLEIN","code":"088300104437","name":"CALVIN.K CK BE 200ML EDT H","tipo":"Perfume","genero":"Hombre","img":true,"notes":["Lavanda", "Notas verdes", "Bergamota", "Menta", "Enebro de Virginia", "Mandarina", "Hierba verde", "Jazmín", "Durazno", "Fresia", "Magnolia", "Orquídea", "Almizcle", "Sándalo", "Cedro", "Vainilla", "Ámbar", "Opopónaco"]},
   {"id":920,"brand":"CALVIN KLEIN","code":"088300602513","name":"CALVIN.K CONTRADICTION 100ML EDP M","tipo":"Perfume","genero":"Mujer","img":true,"notes":["Azucena", "Peonía", "Lirio del valle", "Orquídea", "Rosa", "Falso jazmín", "Eucalipto", "Lila", "Jazmín", "Zarzamora", "Sándalo", "Almizcle", "Haba tonka"]},
   {"id":921,"brand":"CALVIN KLEIN","code":"088300000319","name":"CALVIN.K CONTRADICTION 100ML EDT H","tipo":"Perfume","genero":"Hombre","img":true,"notes":["Lima", "Lavanda", "Limón", "Salvia esclarea", "Mandarina", "Pimienta", "Cardamomo", "Cilantro", "Nuez moscada", "Vetiver", "Almizcle", "Sándalo", "Madera de ébano"]},
   {"id":922,"brand":"CALVIN KLEIN","code":"3616301296669","name":"CALVIN.K DEFY 100ML EDT H","tipo":"Perfume","genero":"Hombre","img":true,"notes":["Bergamota", "Lavanda", "Vetiver", "Ámbar"]},
@@ -1414,7 +1418,7 @@ const PRODUCTS = [
   {"id":3453,"brand":"MONT BLANC","code":"3386460143288","name":"Mont Blanc Patchouli Ink Dark Woods 125M","tipo":"Perfume","genero":"Mujer","img":true,"notes":["Pachulí", "Notas de tinta", "Bergamota", "Especias", "Cedro", "Maderas oscuras", "Ámbar", "Vetiver"]},
   {"id":3454,"brand":"MONT BLANC","code":"3386460154857","name":"Mont Blanc Star Oud 125ML EDP Sp Men","tipo":"Perfume","genero":"Hombre","img":true,"notes":["Oud", "Azafrán", "Bergamota", "Rosa", "Cuero", "Sándalo", "Ámbar", "Incienso"]},
   {"id":3455,"brand":"MONT BLANC","code":"3386460143295","name":"Mont Blanc Vetiver Glacier Frozen Santal","tipo":"Perfume","genero":"Hombre","img":true,"notes":["Vetiver", "Notas heladas", "Cítricos", "Sándalo", "Cardamomo", "Almizcle", "Ámbar", "Cedro"]},
-  {"id":3456,"brand":"NARCISO RODRIGUEZ","code":"3423222108281","name":"NAR  NARCISO RODRIGUEZ AGUA DE PERFUME","tipo":"Perfume","genero":"Mujer","img":true,"dateAdded":"2026-09-23","notes":["Rosa", "Gardenia", "Almizcle blanco", "Vetiver", "Cedro", "Ámbar"]},
+  {"id":3456,"brand":"NARCISO RODRIGUEZ","code":"3423222108281","name":"NAR  NARCISO RODRIGUEZ AGUA DE PERFUME","tipo":"Perfume","genero":"Mujer","img":true,"notes":["Rosa", "Gardenia", "Almizcle blanco", "Vetiver", "Cedro", "Ámbar"]},
   {"id":3466,"brand":"NARCISO RODRIGUEZ","code":"3423473053958","name":"NARCISO RODRIGUEZ NARCISO AMBREE  EDP","tipo":"Perfume","genero":"Mujer","img":true,"notes":["Bergamota", "Pera", "Rosa", "Jazmín", "Gardenia", "Ámbar", "Almizcle", "Sándalo", "Vainilla"]},
   {"id":3469,"brand":"NAUTICA","code":"3412242508027","name":"NAUTICA BLUE 100ML H","tipo":"Perfume","genero":"Hombre","img":true,"notes":["Limón", "Manzana", "Notas ozónicas", "Lavanda", "Muguete", "Jazmín", "Almizcle", "Cedro", "Ámbar"]},
   {"id":3472,"brand":"NAUTICA","code":"3614223930722","name":"NAUTICA BLUE SAIL 100ML EDT H","tipo":"Perfume","genero":"Hombre","img":true,"notes":["Notas marinas", "Mandarina", "Limón", "Salvia", "Geranio", "Cedro", "Almizcle", "Ámbar"]},
@@ -1733,7 +1737,7 @@ const PRODUCTS = [
   {"id":4132,"brand":"GUESS","code":"085715327130","name":"SPLASH WOMEN GUESS MYKONOS BREEZE SHIMME","tipo":"Splash/Bodymist","genero":"Mujer","img":true},
   {"id":4133,"brand":"XOXO","code":"883991071996","name":"SPLASH XOXO MI AMORE 236ML M","tipo":"Splash/Bodymist","genero":"Mujer","img":true},
   {"id":4134,"brand":"ARIANA GRANDE","code":"810101508905","name":"SPLASHARIANA GRANDE CLOUD PINK","tipo":"Splash/Bodymist","genero":"Mujer","img":true},
-  {"id":4149,"brand":"EMPER","code":"6291108524893","name":"STALLION 53 100ML","tipo":"Perfume","genero":"Unisex","img":true,"notes":["Manzana", "Canela", "Pimienta negra", "Cuero", "Jazmín", "Geranio", "Oud", "Ámbar", "Vetiver"]},
+  {"id":4149,"brand":"EMPER","code":"6291108524893","name":"STALLION 53 100ML","tipo":"Perfume","genero":"Unisex","img":true,"dateAdded":"2026-09-23","notes":["Manzana", "Canela", "Pimienta negra", "Cuero", "Jazmín", "Geranio", "Oud", "Ámbar", "Vetiver"]},
   {"id":4151,"brand":"ORTO PARISI","code":"8717774840818","name":"STERCUS ORTO PARISI EDP 50ML","tipo":"Perfume","genero":"Mujer","img":true,"notes":["Notas animales", "Comino", "Especias", "Oud", "Pachulí", "Ámbar", "Incienso", "Castoreum"]},
   {"id":4157,"brand":"ELIZABETH ARDEN","code":"085805757748","name":"SUNFLOWER 100ML EDT M","tipo":"Perfume","genero":"Mujer","img":true,"notes":["Melón", "Melocotón", "Bergamota", "Jazmín", "Rosa", "Muguete", "Sándalo", "Almizcle", "Ámbar"]},
   {"id":4160,"brand":"ELIZABETH ARDEN","code":"085805534400","name":"SUNFLOWER SUMMER BLOOM 100ML EDT M","tipo":"Perfume","genero":"Mujer","img":true,"notes":["Melón", "Mandarina", "Melocotón", "Jazmín", "Muguete", "Peonía", "Almizcle", "Sándalo", "Ámbar"]},
@@ -2024,7 +2028,7 @@ const PRODUCTS = [
   {"id":5341,"brand":"VALENTINO","code":"3614273672054","name":"DONNA BORN IN ROMA CORAL FANTASY EDP 100ML","tipo":"Perfume","genero":"Mujer","img":true,"notes":["Bergamota", "Grosella", "Mandarina", "Jazmín sambac", "Tuberosa", "Vainilla", "Madera de cachemira", "Almizcle"]},
   {"id":5342,"brand":"DIOR","code":"3348900012219","name":"FAHRENHEIT EDT 100ML","tipo":"Perfume","genero":"Hombre","img":true,"notes":["Mandarina", "Espino", "Nuez moscada", "Hoja de violeta", "Madreselva", "Sándalo", "Jazmín", "Cedro", "Cuero", "Vetiver", "Haba tonka", "Almizcle", "Pachulí"]},
   {"id":5343,"brand":"BOND","code":"6290360378053","name":"FRAGRANCE WORLD FRENCH AV VULCAN 100ML E","tipo":"Perfume","genero":"Hombre","img":true,"notes":["Bayas rojas", "Pimienta rosa", "Bergamota", "Rosa", "Violeta", "Pachulí", "Ámbar", "Vainilla"],"hidden":true},
-  {"id":5344,"brand":"ISSEY MIYAKE","code":"3423470485448","name":"ISSEY.M POUR HOMME 200ML EDT H","tipo":"Perfume","genero":"Hombre","img":true,"dateAdded":"2026-09-23","notes":["Yuzu", "Bergamota", "Cilantro", "Nuez moscada", "Sándalo", "Azafrán", "Cedro", "Vetiver", "Tabaco", "Almizcle"],"hidden":true},
+  {"id":5344,"brand":"ISSEY MIYAKE","code":"3423470485448","name":"ISSEY.M POUR HOMME 200ML EDT H","tipo":"Perfume","genero":"Hombre","img":true,"dateAdded":"2026-09-23","notes":["Yuzu", "Bergamota", "Cilantro", "Nuez moscada", "Sándalo", "Azafrán", "Cedro", "Vetiver", "Tabaco", "Almizcle"]},
   {"id":5345,"brand":"TESTER","code":"3616301623328","name":"TESTER HUGO BOSS IN MOTION","tipo":"Perfume","genero":"Hombre","img":true,"notes":["Manzana verde", "Mandarina", "Notas verdes", "Jazmín", "Canela", "Cardamomo", "Sándalo", "Almizcle", "Ámbar"],"hidden":true},
   {"id":5346,"brand":"PERRY ELLIS","code":"844061012417","name":"PE PERRY ELLIS PURE BLUE EDT SPR 100ML","tipo":"Perfume","genero":"Hombre","img":true,"notes":["Notas ozónicas", "Limón", "Melón", "Muguete", "Jazmín", "Salvia", "Cedro", "Ámbar", "Almizcle"]},
   {"id":5347,"brand":"HUGO BOSS","code":"737052766775","name":"HUGO.B BOTTLED UNLIMITED 100ML EDT H","tipo":"Perfume","genero":"Hombre","img":true,"notes":["Manzana", "Pomelo", "Notas verdes", "Canela", "Jazmín", "Geranio", "Sándalo", "Cedro", "Almizcle"]},
@@ -2162,4 +2166,7 @@ const PRODUCTS = [
   {"id":5479,"brand":"TOUS","code":"8436603335416","name":"TOUS SORBET GARDEN M 90ML EDT","tipo":"Perfume","genero":"Mujer","img":true,"dateAdded":"2026-09-23","notes":["Mango", "Pera", "Manzana roja", "Pimienta rosa", "Peonía", "Ylang-ylang", "Fresia", "Haba tonka", "Pachulí"]},
   {"id":5480,"brand":"VERSACE","code":"8011003861224","name":"VERSACE EROS H 100ML EDP","tipo":"Perfume","genero":"Hombre","img":true,"dateAdded":"2026-09-23","notes":["Menta", "Manzana acaramelada", "Limón", "Mandarina", "Ambroxan", "Geranio", "Salvia esclarea", "Vainilla", "Cedro", "Sándalo", "Pachulí", "Cuero"]},
   {"id":5481,"brand":"VERSACE","code":"8011003827343","name":"VERSACE EROS POUR FEMME M 100ML EDT","tipo":"Perfume","genero":"Mujer","img":true,"dateAdded":"2026-09-23","notes":["Limón de Sicilia", "Frambuesa", "Grosella blanca", "Mandarina", "Notas marinas", "Azahar", "Magnolia", "Jazmín", "Fresia", "Almizcle", "Ambroxan", "Pachulí"]},
+  {"id":5482,"brand":"CALVIN KLEIN","code":"088300604432","name":"CALVIN.K CK BE 200ML EDT U","tipo":"Perfume","genero":"Unisex","img":true,"dateAdded":"2026-09-23","notes":["Lavanda", "Notas verdes", "Bergamota", "Menta", "Enebro de Virginia", "Mandarina", "Hierba verde", "Jazmín", "Durazno", "Fresia", "Magnolia", "Orquídea", "Almizcle", "Sándalo", "Cedro", "Vainilla", "Ámbar", "Opopónaco"]},
+  {"id":5483,"brand":"BVLGARI","code":"783320402692","name":"BVLGARI OMNIA CORAL 65ML EDT M","tipo":"Perfume","genero":"Mujer","img":true,"dateAdded":"2026-09-23","notes":["Bergamota", "Bayas de goji", "Nenúfar", "Hibisco", "Granada", "Almizcle", "Cedro"]},
+  {"id":5484,"brand":"NARCISO RODRIGUEZ","code":"3423470890129","name":"NARCISO RODRIGUEZ 100ML EDP M","tipo":"Perfume","genero":"Mujer","img":true,"dateAdded":"2026-09-23","notes":["Rosa", "Gardenia", "Almizcle blanco", "Vetiver", "Cedro", "Ámbar"]},
 ];
