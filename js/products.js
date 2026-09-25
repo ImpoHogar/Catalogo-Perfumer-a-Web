@@ -5,16 +5,10 @@
 //  js/stock.js y se pegan a cada producto al cargar la pagina.
 //  Total: 2153 productos (2131 con foto).
 //
-//  25/9/2026: se eliminaron 2 productos duplicados que se habian
-//  creado en el envio 2309 con el codigo de barras mal leido.
-//  Los codigos correctos ya pertenecian a productos que existian
-//  desde antes en el catalogo:
-//    0883006005514 (CALVIN.K ETERNITY, id 5424) era en realidad
-//      el id 927, codigo real 088300605514.
-//    088300604432 (CALVIN.K CK BE 200ML EDT U, id 5482) era en
-//      realidad el id 918, codigo real 088300104437.
-//  Los ids 927 y 918 quedaron marcados como Nuevos Ingresos
-//  (dateAdded 2026-09-23, la fecha del envio 2309).
+//  25/9/2026: se quitaron las notas de los 7 estuches del envio
+//  2309 (5439, 5440, 5441, 5442, 5443, 5477, 5478). Se corrigio
+//  el tipo del id 510 (Splash/Bodymist) y el genero del id 5452
+//  (Mujer).
 // ============================================================
 
 const PRODUCTS = [
@@ -260,7 +254,7 @@ const PRODUCTS = [
   {"id":507,"brand":"ARMAF","code":"6294015190656","name":"ARMAF ODYSSEY HOMME W.E  BODY SPRAY 200M","tipo":"Splash/Bodymist","genero":"Mujer","img":true,"notes":["Cardamomo", "Pimienta rosa", "Menta", "Notas acuáticas", "Salvia", "Piña", "Madera ambarina", "Vainilla", "Cedro"]},
   {"id":508,"brand":"ARMAF","code":"6295199818862","name":"ARMAF ODYSSEY LICHI LUSH FRUITY U 100ML","tipo":"Perfume","genero":"Unisex","img":true,"notes":["Lichi", "Mandarina", "Durazno", "Frambuesa", "Peonía", "Azahar", "Magnolia", "Jazmín", "Rosa", "Ylang-ylang", "Sándalo", "Ámbar", "Almizcle", "Caramelo", "Vainilla"]},
   {"id":509,"brand":"ARMAF","code":"6294015188639","name":"ARMAF ODYSSEY LIMONI 100MLEDP SPR","tipo":"Perfume","genero":"Unisex","img":true,"notes":["Limón", "Naranja dulce", "Mandarina", "Bergamota", "Azahar", "Notas marinas", "Jengibre", "Té", "Almizcle", "Ámbar"]},
-  {"id":510,"brand":"ARMAF","code":"6295199800317","name":"ARMAF ODYSSEY LIMONI BO SPRAY 200ML","tipo":"Perfume","genero":"Unisex","img":true,"dateAdded":"2026-09-23","notes":["Limón", "Naranja dulce", "Mandarina", "Bergamota", "Azahar", "Notas marinas", "Jengibre", "Té", "Almizcle", "Ámbar"]},
+  {"id":510,"brand":"ARMAF","code":"6295199800317","name":"ARMAF ODYSSEY LIMONI BO SPRAY 200ML","tipo":"Splash/Bodymist","genero":"Unisex","img":true,"dateAdded":"2026-09-23","notes":["Limón", "Naranja dulce", "Mandarina", "Bergamota", "Azahar", "Notas marinas", "Jengibre", "Té", "Almizcle", "Ámbar"]},
   {"id":514,"brand":"ARMAF","code":"6294015168020","name":"ARMAF ODYSSEY MANDARIN SKY 200ML","tipo":"Perfume","genero":"Hombre","img":true,"notes":["Mandarina", "Naranja", "Azafrán", "Salvia", "Caramelo", "Haba tonka", "Tagetes", "Ambroxan", "Cedro", "Vetiver"]},
   {"id":515,"brand":"ARMAF","code":"6294015168037","name":"ARMAF ODYSSEY MEGA 200ML EDP S","tipo":"Perfume","genero":"Hombre","img":true,"notes":["Naranja", "Limón", "Bergamota", "Jengibre", "Menta", "Piña", "Salvia", "Enebro", "Geranio", "Almizcle", "Cedro", "Haba tonka", "Vetiver"]},
   {"id":516,"brand":"ARMAF","code":"6294015149388","name":"ARMAF ODYSSEY MEGA EDT 100ML H","tipo":"Perfume","genero":"Hombre","img":true,"notes":["Naranja", "Limón", "Bergamota", "Jengibre", "Menta", "Piña", "Salvia", "Enebro", "Geranio", "Almizcle", "Cedro", "Haba tonka", "Vetiver"]},
@@ -2129,8 +2123,8 @@ const PRODUCTS = [
   {"id":5439,"brand":"EMPER","code":"6294021909648","name":"ESTUCHE EMPER STALLION IMPERIAL H 2 PZA","tipo":"Estuche","genero":"Hombre","img":true,"dateAdded":"2026-09-23"},
   {"id":5440,"brand":"EMPER","code":"6294021909662","name":"ESTUCHE EMPER STALLION IVORY DREAM U 2","tipo":"Estuche","genero":"Unisex","img":true,"dateAdded":"2026-09-23"},
   {"id":5441,"brand":"EMPER","code":"6294021909532","name":"ESTUCHE EMPER STALLION LA FURIA M 2 PZA","tipo":"Estuche","genero":"Mujer","img":true,"dateAdded":"2026-09-23"},
-  {"id":5442,"brand":"CAROLINA HERRERA","code":"8411061142400","name":"ESTUCHE CAROLINA HERRERA LA BOMBA M 2 PC","tipo":"Estuche","genero":"Mujer","img":true,"dateAdded":"2026-09-23","notes":["Pitahaya", "Piña", "Mandarina", "Frangipani", "Peonía", "Rosa", "Azahar", "Jazmín sambac", "Vainilla", "Pachulí", "Ámbar", "Haba tonka"]},
-  {"id":5443,"brand":"VERSACE","code":"8011003800650","name":"ESTUCHE VERSACE MAN EAU FRAICHE H 2 PZA","tipo":"Estuche","genero":"Hombre","img":true,"dateAdded":"2026-09-23","notes":["Limón", "Bergamota", "Carambola", "Cardamomo", "Palo de rosa", "Cedro", "Estragón", "Salvia", "Pimienta", "Azafrán", "Ámbar", "Almizcle"]},
+  {"id":5442,"brand":"CAROLINA HERRERA","code":"8411061142400","name":"ESTUCHE CAROLINA HERRERA LA BOMBA M 2 PC","tipo":"Estuche","genero":"Mujer","img":true,"dateAdded":"2026-09-23"},
+  {"id":5443,"brand":"VERSACE","code":"8011003800650","name":"ESTUCHE VERSACE MAN EAU FRAICHE H 2 PZA","tipo":"Estuche","genero":"Hombre","img":true,"dateAdded":"2026-09-23"},
   {"id":5444,"brand":"ESTEE LAUDER","code":"027131086871","name":"ESTEE LAUDER BEAUTIFUL 75ML EDP M","tipo":"Perfume","genero":"Mujer","img":true,"dateAdded":"2026-09-23","notes":["Gálbano", "Bergamota", "Mandarina", "Rosa", "Tuberosa", "Jazmín", "Ylang-ylang", "Lirio del valle", "Azahar", "Sándalo", "Vainilla", "Ámbar"]},
   {"id":5445,"brand":"ESTEE LAUDER","code":"027131017752","name":"ESTEE LAUDER YOUTH DEW EDP 67ML","tipo":"Perfume","genero":"Mujer","img":true,"dateAdded":"2026-09-23","notes":["Aldehídos", "Bergamota", "Melocotón", "Clavo de olor", "Canela", "Rosa", "Jazmín", "Incienso", "Bálsamo de Perú", "Pachulí", "Ámbar", "Vainilla"]},
   {"id":5446,"brand":"GIVENCHY","code":"3274872395503","name":"GIVENCHY PI 100ML EDT H","tipo":"Perfume","genero":"Hombre","img":true,"dateAdded":"2026-09-23","notes":["Mandarina", "Estragón", "Romero", "Albahaca", "Anís", "Neroli", "Lirio del valle", "Vainilla", "Almendra", "Haba tonka", "Benjuí", "Cedro"]},
@@ -2139,7 +2133,7 @@ const PRODUCTS = [
   {"id":5449,"brand":"MARC JACOBS","code":"3616306701687","name":"MARC JACOBS DAISY WILD PARFUM 100ML","tipo":"Perfume","genero":"Mujer","img":true,"dateAdded":"2026-09-23","notes":["Flor de banano", "Jazmín", "Macadamia", "Vetiver", "Sándalo"]},
   {"id":5450,"brand":"MARC JACOBS","code":"3616305033055","name":"MARC.J DAISY WILD EAU SO INTENSE EDP","tipo":"Perfume","genero":"Mujer","img":true,"dateAdded":"2026-09-23","notes":["Flor de banano", "Jazmín", "Ámbar", "Sándalo"]},
   {"id":5451,"brand":"MARC JACOBS","code":"3616305869326","name":"MARC JACOBS PERFECT ABSOLUTE 100ML EDP M","tipo":"Perfume","genero":"Mujer","img":true,"dateAdded":"2026-09-23","notes":["Higo", "Caramelo", "Jazmín", "Ámbar"]},
-  {"id":5452,"brand":"MARC JACOBS","code":"3616305187321","name":"MJC PERFECT ELIXIR EDP 100ML IV","tipo":"Perfume","genero":"Unisex","img":true,"dateAdded":"2026-09-23","notes":["Ciruela", "Miel", "Ruibarbo", "Ámbar", "Azahar", "Vainilla", "Resina", "Pachulí"]},
+  {"id":5452,"brand":"MARC JACOBS","code":"3616305187321","name":"MJC PERFECT ELIXIR EDP 100ML IV","tipo":"Perfume","genero":"Mujer","img":true,"dateAdded":"2026-09-23","notes":["Ciruela", "Miel", "Ruibarbo", "Ámbar", "Azahar", "Vainilla", "Resina", "Pachulí"]},
   {"id":5453,"brand":"MOSCHINO","code":"8011003909827","name":"MOSCHINO TOY 2 GUMMY 100ML EDP M","tipo":"Perfume","genero":"Mujer","img":true,"dateAdded":"2026-09-23","notes":["Avellana", "Naranja sanguina", "Bergamota", "Vino tinto", "Praliné", "Leche", "Akigalawood", "Vainilla", "Almizcle", "Mirra", "Benjuí"]},
   {"id":5454,"brand":"MOSCHINO","code":"8011003908134","name":"MOSCHINO TOY 2 YUMMY 100ML EDP M","tipo":"Perfume","genero":"Mujer","img":true,"dateAdded":"2026-09-23","notes":["Bergamota", "Mandarina amarilla", "Incienso", "Geranio", "Pimienta negra", "Jazmín sambac", "Pimienta timur", "Almizcle", "Vetiver de Haití", "Rosa búlgara"]},
   {"id":5455,"brand":"PERRY ELLIS","code":"844061017832","name":"PERRY ELLIS SILVER HORIZON 100ML EDP H","tipo":"Perfume","genero":"Hombre","img":true,"dateAdded":"2026-09-23","notes":["Pimienta rosa", "Bergamota", "Cardamomo", "Notas marinas", "Geranio", "Sal", "Cedro", "Musgo"]},
@@ -2164,8 +2158,8 @@ const PRODUCTS = [
   {"id":5474,"brand":"CLINIQUE","code":"020714156893","name":"CLINIQUE HAPPY M 100ML EDP","tipo":"Perfume","genero":"Mujer","img":true,"dateAdded":"2026-09-23","notes":["Naranja", "Pomelo", "Mandarina", "Bergamota", "Manzana", "Lirio del valle", "Fresia", "Orquídea", "Rosa", "Mimosa", "Almizcle", "Ámbar"]},
   {"id":5475,"brand":"RASASI","code":"614514465165","name":"RASASI HAWAS REINA M 100ML EDP","tipo":"Perfume","genero":"Mujer","img":true,"dateAdded":"2026-09-23","notes":["Albaricoque", "Pera", "Canela", "Jazmín", "Frangipani", "Azahar", "Coco", "Café", "Vainilla", "Almizcle blanco", "Ámbar", "Sándalo"]},
   {"id":5476,"brand":"RAYHAAN","code":"6297001571262","name":"RAYHAAN TERRA U 100ML EDP","tipo":"Perfume","genero":"Unisex","img":true,"dateAdded":"2026-09-23","notes":["Cardamomo", "Pimienta de Sichuán", "Bergamota", "Limón", "Pachulí", "Azafrán", "Rosa", "Azahar", "Incienso", "Vainilla", "Ámbar", "Oud"]},
-  {"id":5477,"brand":"AL HARAMAIN","code":"6291106816105","name":"SET AL HARAMAIN AMBER OUD DUBAI NIGTH U","tipo":"Estuche","genero":"Unisex","img":true,"dateAdded":"2026-09-23","notes":["Azafrán", "Bergamota", "Elemi", "Rosa búlgara", "Oud", "Lirio del valle", "Haba tonka", "Ámbar", "Almizcle blanco", "Musgo de roble"]},
-  {"id":5478,"brand":"AL HARAMAIN","code":"6291106816099","name":"SET AL HARAMAIN AMBER OUD AQUA DUBAI U","tipo":"Estuche","genero":"Unisex","img":true,"dateAdded":"2026-09-23","notes":["Notas verdes", "Bergamota", "Mandarina", "Melón", "Ámbar", "Grosella negra", "Piña", "Almizcle", "Petitgrain", "Gálbano", "Vainilla"]},
+  {"id":5477,"brand":"AL HARAMAIN","code":"6291106816105","name":"SET AL HARAMAIN AMBER OUD DUBAI NIGTH U","tipo":"Estuche","genero":"Unisex","img":true,"dateAdded":"2026-09-23"},
+  {"id":5478,"brand":"AL HARAMAIN","code":"6291106816099","name":"SET AL HARAMAIN AMBER OUD AQUA DUBAI U","tipo":"Estuche","genero":"Unisex","img":true,"dateAdded":"2026-09-23"},
   {"id":5479,"brand":"TOUS","code":"8436603335416","name":"TOUS SORBET GARDEN M 90ML EDT","tipo":"Perfume","genero":"Mujer","img":true,"dateAdded":"2026-09-23","notes":["Mango", "Pera", "Manzana roja", "Pimienta rosa", "Peonía", "Ylang-ylang", "Fresia", "Haba tonka", "Pachulí"]},
   {"id":5480,"brand":"VERSACE","code":"8011003861224","name":"VERSACE EROS H 100ML EDP","tipo":"Perfume","genero":"Hombre","img":true,"dateAdded":"2026-09-23","notes":["Menta", "Manzana acaramelada", "Limón", "Mandarina", "Ambroxan", "Geranio", "Salvia esclarea", "Vainilla", "Cedro", "Sándalo", "Pachulí", "Cuero"]},
   {"id":5481,"brand":"VERSACE","code":"8011003827343","name":"VERSACE EROS POUR FEMME M 100ML EDT","tipo":"Perfume","genero":"Mujer","img":true,"dateAdded":"2026-09-23","notes":["Limón de Sicilia", "Frambuesa", "Grosella blanca", "Mandarina", "Notas marinas", "Azahar", "Magnolia", "Jazmín", "Fresia", "Almizcle", "Ambroxan", "Pachulí"]},
