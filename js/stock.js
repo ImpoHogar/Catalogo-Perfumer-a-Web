@@ -11,12 +11,13 @@
 //  Valores negativos del excel se llevan a 0 (agotado) hasta que
 //  se revisen en el sistema interno.
 //
-//  Solo 2 codigos no vienen en el excel y mantienen su valor:
-//    0883006005514 (CALVIN.K ETERNITY), que nunca ha aparecido.
-//    088300604432 (CALVIN.K CK BE 200ML EDT U), el codigo nuevo del
-//      envio 2309 que aun no esta en el sistema.
+//  25/9/2026: se quitaron los codigos 0883006005514 y 088300604432,
+//  que sostenian stock de 2 productos duplicados eliminados del
+//  catalogo (ver products.js). Ya no hacen falta: sus codigos
+//  reales (088300605514 y 088300104437) siempre estuvieron en el
+//  catalogo y su stock viene del excel de inventario como todos.
 //
-//  Ultima actualizacion: 20260925c (2122121.XLSX, filtrado contra catalogo)
+//  Ultima actualizacion: 20260925d (2122121.XLSX, duplicados corregidos)
 // ============================================================
 const STOCK = {
   "8057971187911": 38,
@@ -2113,7 +2114,6 @@ const STOCK = {
   "8411061081556": 0,
   "812256029755": 16,
   "6295199807217": 0,
-  "0883006005514": 180,   // sin dato en el excel, se mantuvo
   "8411061081563": 163,
   "6291107455365": 107,
   "6290171071051": 0,
@@ -2171,7 +2171,6 @@ const STOCK = {
   "8436603335416": 42,
   "8011003861224": 0,
   "8011003827343": 24,
-  "088300604432": 120,   // sin dato en el excel, se mantuvo
   "783320402692": 58,
   "3423470890129": 5,
 };

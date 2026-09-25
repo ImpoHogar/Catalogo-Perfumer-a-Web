@@ -3,14 +3,18 @@
 // ============================================================
 //  Un producto por linea. Las CANTIDADES no viven aca: estan en
 //  js/stock.js y se pegan a cada producto al cargar la pagina.
-//  Total: 2155 productos (2133 con foto).
-//  Actualizado el 23/9/2026: entraron los 50 productos del envio
-//  2309 (ids 5435 a 5484) y los Nuevos Ingresos quedaron
-//  apuntando a ese envio.
+//  Total: 2153 productos (2131 con foto).
 //
-//  OJO: un mismo perfume con DOS codigos de barras distintos va como
-//  DOS productos separados, cada uno con su cantidad. Por eso hay
-//  pares como CK BE 200ML (codigos 088300104437 y 088300604432).
+//  25/9/2026: se eliminaron 2 productos duplicados que se habian
+//  creado en el envio 2309 con el codigo de barras mal leido.
+//  Los codigos correctos ya pertenecian a productos que existian
+//  desde antes en el catalogo:
+//    0883006005514 (CALVIN.K ETERNITY, id 5424) era en realidad
+//      el id 927, codigo real 088300605514.
+//    088300604432 (CALVIN.K CK BE 200ML EDT U, id 5482) era en
+//      realidad el id 918, codigo real 088300104437.
+//  Los ids 927 y 918 quedaron marcados como Nuevos Ingresos
+//  (dateAdded 2026-09-23, la fecha del envio 2309).
 // ============================================================
 
 const PRODUCTS = [
@@ -429,14 +433,14 @@ const PRODUCTS = [
   {"id":910,"brand":"CALVIN KLEIN","code":"3616303476805","name":"CALVIN K. ETERNITY AROM INTENSE 100ML","tipo":"Perfume","genero":"Hombre","img":true,"notes":["Bergamota", "Cardamomo", "Salvia", "Lavanda", "Jazmín", "Iris", "Sándalo", "Ámbar", "Almizcle"]},
   {"id":914,"brand":"CALVIN KLEIN","code":"088300073627","name":"CALVIN KLEIN TRUTH 100ML EDT H","tipo":"Perfume","genero":"Hombre","img":true,"notes":["Albahaca", "Cardamomo", "Hojas verdes", "Helecho", "Resinas", "Cedro rojo", "Pachulí", "Maderas exóticas"]},
   {"id":916,"brand":"CALVIN KLEIN","code":"3607340213267","name":"CALVIN.K BEAUTY 100ML EDP M","tipo":"Perfume","genero":"Mujer","img":true,"notes":["Almizcle ambreta", "Jazmín", "Cedro de Virginia"]},
-  {"id":918,"brand":"CALVIN KLEIN","code":"088300104437","name":"CALVIN.K CK BE 200ML EDT H","tipo":"Perfume","genero":"Hombre","img":true,"notes":["Lavanda", "Notas verdes", "Bergamota", "Menta", "Enebro de Virginia", "Mandarina", "Hierba verde", "Jazmín", "Durazno", "Fresia", "Magnolia", "Orquídea", "Almizcle", "Sándalo", "Cedro", "Vainilla", "Ámbar", "Opopónaco"]},
+  {"id":918,"brand":"CALVIN KLEIN","code":"088300104437","name":"CALVIN.K CK BE 200ML EDT H","tipo":"Perfume","genero":"Hombre","img":true,"dateAdded":"2026-09-23","notes":["Lavanda", "Notas verdes", "Bergamota", "Menta", "Enebro de Virginia", "Mandarina", "Hierba verde", "Jazmín", "Durazno", "Fresia", "Magnolia", "Orquídea", "Almizcle", "Sándalo", "Cedro", "Vainilla", "Ámbar", "Opopónaco"]},
   {"id":920,"brand":"CALVIN KLEIN","code":"088300602513","name":"CALVIN.K CONTRADICTION 100ML EDP M","tipo":"Perfume","genero":"Mujer","img":true,"notes":["Azucena", "Peonía", "Lirio del valle", "Orquídea", "Rosa", "Falso jazmín", "Eucalipto", "Lila", "Jazmín", "Zarzamora", "Sándalo", "Almizcle", "Haba tonka"]},
   {"id":921,"brand":"CALVIN KLEIN","code":"088300000319","name":"CALVIN.K CONTRADICTION 100ML EDT H","tipo":"Perfume","genero":"Hombre","img":true,"notes":["Lima", "Lavanda", "Limón", "Salvia esclarea", "Mandarina", "Pimienta", "Cardamomo", "Cilantro", "Nuez moscada", "Vetiver", "Almizcle", "Sándalo", "Madera de ébano"]},
   {"id":922,"brand":"CALVIN KLEIN","code":"3616301296669","name":"CALVIN.K DEFY 100ML EDT H","tipo":"Perfume","genero":"Hombre","img":true,"notes":["Bergamota", "Lavanda", "Vetiver", "Ámbar"]},
   {"id":923,"brand":"CALVIN KLEIN","code":"088300100514","name":"CALVIN.K ESCAPE 100ML EDP H","tipo":"Perfume","genero":"Hombre","img":true,"notes":["Melón", "Eucalipto", "Mango", "Pomelo", "Enebro", "Bergamota", "Notas marinas", "Abedul", "Abeto", "Ciprés", "Romero", "Salvia", "Musgo de roble", "Vetiver", "Sándalo", "Ámbar", "Pachulí"]},
   {"id":924,"brand":"CALVIN KLEIN","code":"88300100514","name":"CALVIN.K ESCAPE 100ML EDP H","tipo":"Perfume","genero":"Hombre","img":true,"notes":["Melón", "Eucalipto", "Mango", "Pomelo", "Enebro", "Bergamota", "Notas marinas", "Abedul", "Abeto", "Ciprés", "Romero", "Salvia", "Musgo de roble", "Vetiver", "Sándalo", "Ámbar", "Pachulí"]},
   {"id":925,"brand":"CALVIN KLEIN","code":"088300608409","name":"CALVIN.K ESCAPE 100ML EDP M","tipo":"Perfume","genero":"Mujer","img":true,"notes":["Melón", "Manzanilla", "Caléndula", "Cempasúchil", "Albaricoque", "Jacinto", "Musgo de roble", "Manzana", "Cilantro", "Mandarina", "Grosella negra", "Ylang-ylang", "Casia", "Lichi", "Durazno", "Lirio del valle", "Clavel", "Rosa", "Jazmín", "Clavo", "Almizcle", "Ámbar", "Sándalo", "Vetiver", "Cedro", "Vainilla"]},
-  {"id":927,"brand":"CALVIN KLEIN","code":"088300605514","name":"CALVIN.K ETERNITY 100 EDT H","tipo":"Perfume","genero":"Hombre","img":true,"notes":["Lavanda", "Limón", "Bergamota", "Mandarina", "Salvia", "Bayas de enebro", "Albahaca", "Geranio", "Jazmín", "Cilantro", "Azahar", "Lirio del valle", "Azucena", "Sándalo", "Almizcle", "Vetiver", "Palo de rosa brasileño", "Ámbar"]},
+  {"id":927,"brand":"CALVIN KLEIN","code":"088300605514","name":"CALVIN.K ETERNITY 100 EDT H","tipo":"Perfume","genero":"Hombre","img":true,"dateAdded":"2026-09-23","notes":["Lavanda", "Limón", "Bergamota", "Mandarina", "Salvia", "Bayas de enebro", "Albahaca", "Geranio", "Jazmín", "Cilantro", "Azahar", "Lirio del valle", "Azucena", "Sándalo", "Almizcle", "Vetiver", "Palo de rosa brasileño", "Ámbar"]},
   {"id":929,"brand":"CALVIN KLEIN","code":"088300601400","name":"CALVIN.K ETERNITY 100ML EDP M","tipo":"Perfume","genero":"Mujer","img":true,"notes":["Notas verdes", "Fresia", "Salvia", "Cítricos", "Mandarina", "Clavel", "Lirio", "Lirio del valle", "Narciso", "Caléndula", "Violeta", "Rosa", "Jazmín", "Almizcle", "Heliotropo", "Sándalo", "Ámbar", "Pachulí"]},
   {"id":930,"brand":"CALVIN KLEIN","code":"3607341471727","name":"CALVIN.K ETERNITY 200ML EDT H","tipo":"Perfume","genero":"Hombre","img":true,"notes":["Lavanda", "Limón", "Bergamota", "Mandarina", "Salvia", "Bayas de enebro", "Albahaca", "Geranio", "Jazmín", "Cilantro", "Azahar", "Lirio del valle", "Azucena", "Sándalo", "Almizcle", "Vetiver", "Palo de rosa brasileño", "Ámbar"]},
   {"id":932,"brand":"CALVIN KLEIN","code":"3614224871284","name":"CALVIN.K ETERNITY AIR 100ML EDT H","tipo":"Perfume","genero":"Hombre","img":true,"notes":["Notas marinas", "Notas ozónicas", "Bayas de enebro", "Mandarina", "Lavanda", "Manzana verde", "Hoja de violeta", "Alga marina", "Ámbar gris", "Pachulí"]},
@@ -2108,7 +2112,6 @@ const PRODUCTS = [
   {"id":5421,"brand":"TESTER","code":"8411061081556","name":"TESTER BLUE SEDUCCION EDT 100ML","tipo":"Perfume","genero":"Hombre","img":true},
   {"id":5422,"brand":"ARIANA GRANDE","code":"812256029755","name":"ESTUCHE ARIANA GRANDE THANK U NEXT 3PC","tipo":"Estuche","genero":"Mujer","img":true},
   {"id":5423,"brand":"ARMAF","code":"6295199807217","name":"ODYSSEY MARSHMALLOW EDP 100ML","tipo":"Perfume","genero":"Unisex","img":true,"notes":["Coco", "Manzana", "Limón", "Peonía", "Lirio de los valles", "Malvavisco", "Fresa", "Frambuesa", "Durazno", "Chabacano", "Flor de azahar", "Queso mascarpone", "Vainilla", "Praliné", "Almizcle", "Haba tonka", "Ámbar"]},
-  {"id":5424,"brand":"CALVIN KLEIN","code":"0883006005514","name":"CALVIN.K ETERNITY 100 EDT H","tipo":"Perfume","genero":"Hombre","img":true,"notes":["Lavanda", "Cítricos", "Salvia", "Enebro", "Albahaca", "Sándalo", "Vetiver", "Almizcle"]},
   {"id":5425,"brand":"ANTONIO BANDERAS","code":"8411061081563","name":"ANTONIO BANDERAS BLUE SEDUCTION 200ML H","tipo":"Perfume","genero":"Hombre","img":true,"notes":["Melón", "Bergamota", "Menta", "Grosellas negras", "Agua de mar", "Manzana verde", "Capuchino", "Cardamomo", "Nuez moscada", "Notas amaderadas", "Ámbar"]},
   {"id":5426,"brand":"LATTAFA","code":"6291107455365","name":"LATTAFA QAED AL FURSAN","tipo":"Perfume","genero":"Unisex","img":true,"dateAdded":"2026-09-23","notes":["Piña", "Azafrán", "Abeto balsámico", "Jazmín", "Cedro", "Ámbar", "Oud"]},
   {"id":5427,"brand":"AFNAN","code":"6290171071051","name":"AFNAN ZIMAYA PRECIOUS FATIMA PINK M 100ML","tipo":"Perfume","genero":"Mujer","img":true,"notes":["Ruibarbo", "Bergamota", "Toronja", "Lichi", "Rosa", "Jazmín", "Peonía", "Vainilla", "Almizcle", "Vetiver", "Cachemira", "Incienso"]},
@@ -2166,7 +2169,6 @@ const PRODUCTS = [
   {"id":5479,"brand":"TOUS","code":"8436603335416","name":"TOUS SORBET GARDEN M 90ML EDT","tipo":"Perfume","genero":"Mujer","img":true,"dateAdded":"2026-09-23","notes":["Mango", "Pera", "Manzana roja", "Pimienta rosa", "Peonía", "Ylang-ylang", "Fresia", "Haba tonka", "Pachulí"]},
   {"id":5480,"brand":"VERSACE","code":"8011003861224","name":"VERSACE EROS H 100ML EDP","tipo":"Perfume","genero":"Hombre","img":true,"dateAdded":"2026-09-23","notes":["Menta", "Manzana acaramelada", "Limón", "Mandarina", "Ambroxan", "Geranio", "Salvia esclarea", "Vainilla", "Cedro", "Sándalo", "Pachulí", "Cuero"]},
   {"id":5481,"brand":"VERSACE","code":"8011003827343","name":"VERSACE EROS POUR FEMME M 100ML EDT","tipo":"Perfume","genero":"Mujer","img":true,"dateAdded":"2026-09-23","notes":["Limón de Sicilia", "Frambuesa", "Grosella blanca", "Mandarina", "Notas marinas", "Azahar", "Magnolia", "Jazmín", "Fresia", "Almizcle", "Ambroxan", "Pachulí"]},
-  {"id":5482,"brand":"CALVIN KLEIN","code":"088300604432","name":"CALVIN.K CK BE 200ML EDT U","tipo":"Perfume","genero":"Unisex","img":true,"dateAdded":"2026-09-23","notes":["Lavanda", "Notas verdes", "Bergamota", "Menta", "Enebro de Virginia", "Mandarina", "Hierba verde", "Jazmín", "Durazno", "Fresia", "Magnolia", "Orquídea", "Almizcle", "Sándalo", "Cedro", "Vainilla", "Ámbar", "Opopónaco"]},
   {"id":5483,"brand":"BVLGARI","code":"783320402692","name":"BVLGARI OMNIA CORAL 65ML EDT M","tipo":"Perfume","genero":"Mujer","img":true,"dateAdded":"2026-09-23","notes":["Bergamota", "Bayas de goji", "Nenúfar", "Hibisco", "Granada", "Almizcle", "Cedro"]},
   {"id":5484,"brand":"NARCISO RODRIGUEZ","code":"3423470890129","name":"NARCISO RODRIGUEZ 100ML EDP M","tipo":"Perfume","genero":"Mujer","img":true,"dateAdded":"2026-09-23","notes":["Rosa", "Gardenia", "Almizcle blanco", "Vetiver", "Cedro", "Ámbar"]},
 ];
