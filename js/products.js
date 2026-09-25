@@ -5,10 +5,8 @@
 //  js/stock.js y se pegan a cada producto al cargar la pagina.
 //  Total: 2153 productos (2131 con foto).
 //
-//  25/9/2026: se quitaron las notas de los 7 estuches del envio
-//  2309 (5439, 5440, 5441, 5442, 5443, 5477, 5478). Se corrigio
-//  el tipo del id 510 (Splash/Bodymist) y el genero del id 5452
-//  (Mujer).
+//  25/9/2026: se corrigio el nombre del id 5442 (Carolina Herrera
+//  La Bomba) para indicar el contenido del estuche.
 // ============================================================
 
 const PRODUCTS = [
@@ -2123,7 +2121,7 @@ const PRODUCTS = [
   {"id":5439,"brand":"EMPER","code":"6294021909648","name":"ESTUCHE EMPER STALLION IMPERIAL H 2 PZA","tipo":"Estuche","genero":"Hombre","img":true,"dateAdded":"2026-09-23"},
   {"id":5440,"brand":"EMPER","code":"6294021909662","name":"ESTUCHE EMPER STALLION IVORY DREAM U 2","tipo":"Estuche","genero":"Unisex","img":true,"dateAdded":"2026-09-23"},
   {"id":5441,"brand":"EMPER","code":"6294021909532","name":"ESTUCHE EMPER STALLION LA FURIA M 2 PZA","tipo":"Estuche","genero":"Mujer","img":true,"dateAdded":"2026-09-23"},
-  {"id":5442,"brand":"CAROLINA HERRERA","code":"8411061142400","name":"ESTUCHE CAROLINA HERRERA LA BOMBA M 2 PC","tipo":"Estuche","genero":"Mujer","img":true,"dateAdded":"2026-09-23"},
+  {"id":5442,"brand":"CAROLINA HERRERA","code":"8411061142400","name":"ESTUCHE CAROLINA HERRERA LA BOMBA 50ML + BODY LOTION 100ML M","tipo":"Estuche","genero":"Mujer","img":true,"dateAdded":"2026-09-23"},
   {"id":5443,"brand":"VERSACE","code":"8011003800650","name":"ESTUCHE VERSACE MAN EAU FRAICHE H 2 PZA","tipo":"Estuche","genero":"Hombre","img":true,"dateAdded":"2026-09-23"},
   {"id":5444,"brand":"ESTEE LAUDER","code":"027131086871","name":"ESTEE LAUDER BEAUTIFUL 75ML EDP M","tipo":"Perfume","genero":"Mujer","img":true,"dateAdded":"2026-09-23","notes":["Gálbano", "Bergamota", "Mandarina", "Rosa", "Tuberosa", "Jazmín", "Ylang-ylang", "Lirio del valle", "Azahar", "Sándalo", "Vainilla", "Ámbar"]},
   {"id":5445,"brand":"ESTEE LAUDER","code":"027131017752","name":"ESTEE LAUDER YOUTH DEW EDP 67ML","tipo":"Perfume","genero":"Mujer","img":true,"dateAdded":"2026-09-23","notes":["Aldehídos", "Bergamota", "Melocotón", "Clavo de olor", "Canela", "Rosa", "Jazmín", "Incienso", "Bálsamo de Perú", "Pachulí", "Ámbar", "Vainilla"]},
