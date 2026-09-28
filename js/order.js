@@ -11,6 +11,37 @@ let lastOrderSummary = { name: '', phone: '', totalProducts: 0, totalUnits: 0 };
 
 let pendingPhotosZip = null;
 
+// Guarda el pedido en Supabase para los reportes (quién pidió qué y
+// cuándo). Se guarda tal cual el cliente escribió su nombre/teléfono en
+// el modal -- el catálogo NO consulta ni muestra la lista de otros
+// clientes, para que nadie pueda ver quiénes son los demás clientes de
+// ImpoHogar. Ver SUPABASE_URL / SUPABASE_ANON_KEY en config.js.
+async function saveOrderToDatabase(customer, items, summary) {
+  if (typeof SUPABASE_URL === 'undefined' || !SUPABASE_URL) return;
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/pedidos`, {
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json',
+        Prefer: 'return=minimal'
+      },
+      body: JSON.stringify([{
+        cliente_nombre: customer.name,
+        cliente_telefono: customer.phone,
+        items: items.map(it => ({ code: it.code, name: it.name, brand: it.brand, qty: it.qty })),
+        total_lineas: summary.totalProducts,
+        total_unidades: summary.totalUnits
+      }])
+    });
+  } catch (err) {
+    // Nunca debe romper el flujo del pedido del cliente: si esto falla,
+    // el Excel/ZIP igual se genera y descarga con normalidad.
+    console.error('No se pudo guardar el pedido en el reporte', err);
+  }
+}
+
 function openCustomerModal() {
   const ids = Object.keys(qtyMap);
   if (ids.length === 0) {
@@ -104,6 +135,11 @@ async function generateExcel() {
       totalProducts: historyItems.length,
       totalUnits: historyItems.reduce((sum, it) => sum + it.qty, 0)
     };
+
+    // Guarda el pedido en la base de datos para los reportes (Supabase).
+    // No se espera su resultado: si falla o hay mala conexion, el pedido
+    // del cliente (Excel/ZIP) se genera y descarga igual, sin verse afectado.
+    saveOrderToDatabase(currentCustomer, historyItems, lastOrderSummary);
 
     // Aviso a Google Analytics de que se genero un pedido, sin mandar
     // ningun dato personal del cliente (solo cantidades).
