@@ -159,4 +159,7 @@ function jumpToProduct(pid) {
   setTimeout(() => card.classList.remove('dupe-highlight'), 1600);
 }
 
-PRODUCTS.forEach(p => { PRODUCTS_BY_ID[p.id] = p; });
+// Nota: ya no arma PRODUCTS_BY_ID aca -- eso lo hace buildDerivedData()
+// en data.js, una sola vez, apenas llegan los productos de Supabase
+// (ver js/products-loader.js). Duplicarlo aca no hace falta y con la
+// carga ahora asincrona, PRODUCTS todavia no existiria en este momento.

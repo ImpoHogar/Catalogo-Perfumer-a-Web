@@ -61,7 +61,42 @@ document.addEventListener('keydown', e => {
   if (fb && fb.classList.contains('open') && typeof closeFeedback === 'function') closeFeedback();
 });
 
+// ============================================================
+//  ARRANQUE DEL CATALOGO (espera productos)
+// ============================================================
+//  Los productos ahora se traen de Supabase de forma asincrona
+//  (js/products-loader.js). El catalogo no puede pintarse hasta que
+//  esos datos esten listos, asi que este bloque espera a que se
+//  cumplan DOS cosas -- el DOM cargo Y los productos llegaron -- sin
+//  importar el orden en que sucedan, antes de armar la pagina.
+// ============================================================
+let _domReady = false;
+let _productsReady = false;
+
 document.addEventListener('DOMContentLoaded', () => {
+  _domReady = true;
+  tryInitCatalog();
+});
+
+window.addEventListener('productos:listos', () => {
+  _productsReady = true;
+  tryInitCatalog();
+});
+
+window.addEventListener('productos:error', (e) => {
+  const count = document.getElementById('count');
+  if (count) {
+    count.textContent = 'No se pudieron cargar los productos. Intenta recargar la página.';
+  }
+  console.error('Error cargando productos', e.detail);
+});
+
+function tryInitCatalog() {
+  if (!_domReady || !_productsReady) return;
+  initCatalogUI();
+}
+
+function initCatalogUI() {
   try {
     initTheme();
     renderBrandFilter();
@@ -96,4 +131,4 @@ document.addEventListener('DOMContentLoaded', () => {
     console.error(err);
     document.getElementById('count').textContent = 'Error cargando catálogo: ' + err.message;
   }
-});
+}

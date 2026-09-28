@@ -9,7 +9,7 @@ let diaNinoMode = false;
 
 let nuevosIngresosMode = false;
 
-let filteredProducts = VISIBLE_PRODUCTS;
+let filteredProducts = [];
 
 let renderedCount = 0;
 
