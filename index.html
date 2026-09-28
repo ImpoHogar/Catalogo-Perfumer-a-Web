@@ -18,7 +18,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/styles.css?v=20260928c">
+<link rel="stylesheet" href="css/styles.css?v=20260928d">
 </head>
 <body>
 <noscript>
@@ -390,15 +390,38 @@
     <div class="admin-tabs">
       <button type="button" id="adminTabProductos" class="admin-tab" onclick="switchAdminTab('productos')">Productos</button>
       <button type="button" id="adminTabClientes" class="admin-tab" onclick="switchAdminTab('clientes')">Clientes</button>
+      <button type="button" id="adminTabPedidos" class="admin-tab" onclick="switchAdminTab('pedidos')">Pedidos</button>
     </div>
     <div class="admin-body">
       <div class="admin-toolbar">
         <input id="adminSearchInput" class="field-input" type="search" placeholder="Buscar..." oninput="onAdminSearch()">
-        <button type="button" class="btn btn-primary" onclick="adminTab==='productos' ? openAdminNewProduct() : openAdminNewClient()">+ Agregar</button>
+        <button type="button" id="adminAddBtn" class="btn btn-primary" onclick="adminTab==='productos' ? openAdminNewProduct() : openAdminNewClient()">+ Agregar</button>
         <button type="button" class="btn btn-ghost" onclick="adminLogout()">Cerrar sesión</button>
       </div>
+      <div id="adminPedidosFilters" class="admin-toolbar" style="display:none;">
+        <div>
+          <label class="field-label" for="adminPedidosFrom">Desde</label>
+          <input id="adminPedidosFrom" class="field-input" type="date" style="height:40px; flex:0 0 160px; min-width:160px;">
+        </div>
+        <div>
+          <label class="field-label" for="adminPedidosTo">Hasta</label>
+          <input id="adminPedidosTo" class="field-input" type="date" style="height:40px; flex:0 0 160px; min-width:160px;">
+        </div>
+        <label style="display:flex; align-items:center; gap:6px; font-size:13px; margin-top:18px;">
+          <input type="checkbox" id="adminPedidosSoloSinVincular" onchange="onAdminPedidosFilterChange()">
+          Solo sin vincular
+        </label>
+        <button type="button" class="btn btn-ghost" style="margin-top:18px;" onclick="onAdminPedidosFilterChange()">Filtrar</button>
+        <button type="button" class="btn btn-ghost" style="margin-top:18px;" onclick="clearAdminPedidosFilters()">Limpiar</button>
+        <button type="button" class="btn btn-primary" style="margin-top:18px;" onclick="exportAdminPedidosExcel()">Exportar a Excel</button>
+      </div>
       <div id="adminMsg" class="admin-msg"></div>
+      <div id="adminPedidosSummary" class="admin-summary" style="display:none;"></div>
       <div id="adminListBody"></div>
+      <div id="adminPedidosLoadMoreWrap" style="display:none; text-align:center; margin-top:14px;">
+        <button type="button" class="btn btn-ghost" onclick="loadPedidosAdmin(false)">Cargar más</button>
+      </div>
+      <datalist id="adminClientesDatalist"></datalist>
     </div>
   </div>
 </div>
@@ -476,7 +499,7 @@
 <script defer src="js/showcase.js?v=20260928a"></script>
 <script defer src="js/gate.js?v=20260921e"></script>
 <script defer src="js/feedback.js?v=20260921e"></script>
-<script defer src="js/admin.js?v=20260928a"></script>
+<script defer src="js/admin.js?v=20260928b"></script>
 <script defer src="js/main.js?v=20260928a"></script>
 </body>
 </html>

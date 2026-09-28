@@ -2,11 +2,13 @@
 //  PANEL ADMINISTRATIVO (oculto)
 // ============================================================
 //  Se activa haciendo 5 clics seguidos sobre el logo del encabezado
-//  (en menos de 3 segundos). Pide iniciar sesion con la misma cuenta
-//  de administrador que usa reportes_pedidos.html (Supabase Auth).
-//  Con sesion iniciada, permite ver/agregar/editar/eliminar productos
-//  y clientes directamente en Supabase. Nunca visible ni accesible
-//  para un cliente que no conozca el gesto y tenga la contraseña.
+//  (en menos de 3 segundos). Pide iniciar sesion con la cuenta de
+//  administrador (Supabase Auth). Con sesion iniciada, permite
+//  ver/agregar/editar/eliminar productos y clientes, y ver/cruzar/
+//  exportar los pedidos generados (reemplaza a reportes_pedidos.html,
+//  que ya no hace falta como herramienta aparte). Nunca visible ni
+//  accesible para un cliente que no conozca el gesto y tenga la
+//  contraseña.
 // ============================================================
 
 const ADMIN_SESSION_KEY = 'impohogar_admin_session';
@@ -161,13 +163,20 @@ function switchAdminTab(tab) {
   adminEditingId = null;
   document.getElementById('adminTabProductos').classList.toggle('active', tab === 'productos');
   document.getElementById('adminTabClientes').classList.toggle('active', tab === 'clientes');
+  document.getElementById('adminTabPedidos').classList.toggle('active', tab === 'pedidos');
   document.getElementById('adminSearchInput').value = '';
-  document.getElementById('adminSearchInput').placeholder =
-    tab === 'productos' ? 'Buscar por código, nombre o marca...' : 'Buscar por código, nombre o teléfono...';
+  document.getElementById('adminAddBtn').style.display = tab === 'pedidos' ? 'none' : '';
+  document.getElementById('adminPedidosFilters').style.display = tab === 'pedidos' ? 'flex' : 'none';
+  document.getElementById('adminPedidosSummary').style.display = tab === 'pedidos' ? 'grid' : 'none';
+  document.getElementById('adminPedidosLoadMoreWrap').style.display = 'none';
+  if (tab === 'productos') document.getElementById('adminSearchInput').placeholder = 'Buscar por código, nombre o marca...';
+  else if (tab === 'clientes') document.getElementById('adminSearchInput').placeholder = 'Buscar por código, nombre o teléfono...';
+  else document.getElementById('adminSearchInput').placeholder = 'Buscar cliente por nombre o teléfono...';
   document.getElementById('adminMsg').textContent = '';
   document.getElementById('adminListBody').innerHTML = '';
   if (tab === 'productos') loadProductosAdmin('');
-  else loadClientesAdmin('');
+  else if (tab === 'clientes') loadClientesAdmin('');
+  else loadPedidosAdmin(true);
 }
 
 function adminSetMsg(text, kind) {
@@ -176,10 +185,15 @@ function adminSetMsg(text, kind) {
   el.className = 'admin-msg' + (kind === 'error' ? ' is-error' : kind === 'ok' ? ' is-ok' : '');
 }
 
+let adminSearchDebounce = null;
 function onAdminSearch() {
-  const term = document.getElementById('adminSearchInput').value.trim();
-  if (adminTab === 'productos') loadProductosAdmin(term);
-  else loadClientesAdmin(term);
+  if (adminSearchDebounce) clearTimeout(adminSearchDebounce);
+  adminSearchDebounce = setTimeout(() => {
+    const term = document.getElementById('adminSearchInput').value.trim();
+    if (adminTab === 'productos') loadProductosAdmin(term);
+    else if (adminTab === 'clientes') loadClientesAdmin(term);
+    else loadPedidosAdmin(true);
+  }, adminTab === 'pedidos' ? 350 : 0);
 }
 
 // ============================================================
@@ -630,4 +644,274 @@ async function saveAdminNewClient() {
   } catch (err) {
     adminSetMsg('Error al crear: ' + err.message, 'error');
   }
+}
+
+// ============================================================
+//  PEDIDOS (reemplaza a reportes_pedidos.html)
+// ============================================================
+
+const ADMIN_PEDIDOS_PAGE_SIZE = 50;
+let adminPedidosOffset = 0;
+let adminPedidosRows = [];
+let adminClientesCache = [];
+let adminClientesByCodigo = new Map();
+let adminClientesCacheLoaded = false;
+
+function normPhoneAdmin(s) { return (s || '').replace(/\D/g, ''); }
+function normNameAdmin(s) { return (s || '').trim().toUpperCase().replace(/\s+/g, ' '); }
+
+function fmtDateAdmin(iso) {
+  const d = new Date(iso);
+  if (isNaN(d)) return iso;
+  return d.toLocaleString('es-CR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+async function loadAllClientesForMatching() {
+  try {
+    const resp = await adminFetch('clientes?select=codigo,nombre,tel1,tel2,tel3', {
+      headers: { Range: '0-999' }
+    });
+    if (!resp.ok && resp.status !== 206) throw new Error('HTTP ' + resp.status);
+    adminClientesCache = await resp.json();
+    adminClientesByCodigo = new Map(adminClientesCache.map(c => [c.codigo, c]));
+    adminClientesCacheLoaded = true;
+    const list = document.getElementById('adminClientesDatalist');
+    if (list) {
+      list.innerHTML = adminClientesCache.map(c => `<option value="${escapeAdminHtml(c.nombre)} — #${escapeAdminHtml(c.codigo)}"></option>`).join('');
+    }
+  } catch (err) {
+    adminClientesCache = [];
+    adminClientesByCodigo = new Map();
+  }
+}
+
+function matchClienteAdmin(p) {
+  if (p.cliente_codigo && adminClientesByCodigo.has(p.cliente_codigo)) {
+    return adminClientesByCodigo.get(p.cliente_codigo);
+  }
+  const phone = normPhoneAdmin(p.cliente_telefono);
+  if (phone) {
+    const byPhone = adminClientesCache.find(c =>
+      normPhoneAdmin(c.tel1) === phone || normPhoneAdmin(c.tel2) === phone || normPhoneAdmin(c.tel3) === phone
+    );
+    if (byPhone) return byPhone;
+  }
+  const name = normNameAdmin(p.cliente_nombre);
+  if (name) {
+    const byName = adminClientesCache.find(c => normNameAdmin(c.nombre) === name);
+    if (byName) return byName;
+  }
+  return null;
+}
+
+function onAdminPedidosFilterChange() {
+  loadPedidosAdmin(true);
+}
+
+function clearAdminPedidosFilters() {
+  document.getElementById('adminSearchInput').value = '';
+  document.getElementById('adminPedidosFrom').value = '';
+  document.getElementById('adminPedidosTo').value = '';
+  document.getElementById('adminPedidosSoloSinVincular').checked = false;
+  loadPedidosAdmin(true);
+}
+
+function buildPedidosUrl(offset) {
+  const search = document.getElementById('adminSearchInput').value.trim();
+  const from = document.getElementById('adminPedidosFrom').value;
+  const to = document.getElementById('adminPedidosTo').value;
+  let url = `pedidos?select=*&order=creado_en.desc&limit=${ADMIN_PEDIDOS_PAGE_SIZE}&offset=${offset}`;
+  if (search) {
+    const t = search.replace(/[,()]/g, '');
+    url += `&or=(cliente_nombre.ilike.*${t}*,cliente_telefono.ilike.*${t}*)`;
+  }
+  if (from) url += `&creado_en=gte.${from}T00:00:00`;
+  if (to) url += `&creado_en=lte.${to}T23:59:59`;
+  return url;
+}
+
+async function loadPedidosAdmin(reset) {
+  if (reset) {
+    adminPedidosOffset = 0;
+    adminPedidosRows = [];
+    document.getElementById('adminListBody').innerHTML = '';
+  }
+  adminSetMsg('Cargando...');
+  try {
+    if (!adminClientesCacheLoaded) await loadAllClientesForMatching();
+    const resp = await adminFetch(buildPedidosUrl(adminPedidosOffset));
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const data = await resp.json();
+    adminPedidosRows = adminPedidosRows.concat(data);
+    renderPedidosRows(reset);
+    document.getElementById('adminPedidosLoadMoreWrap').style.display = data.length < ADMIN_PEDIDOS_PAGE_SIZE ? 'none' : 'block';
+    adminPedidosOffset += data.length;
+    renderPedidosSummary();
+    adminSetMsg(adminPedidosRows.length ? `${adminPedidosRows.length} pedido(s) cargado(s)` : '');
+  } catch (err) {
+    adminSetMsg('Error al cargar pedidos: ' + err.message, 'error');
+  }
+}
+
+function pedidoProductsPreview(items) {
+  if (!items.length) return '<span style="color:var(--muted)">Sin detalle</span>';
+  const preview = items.slice(0, 2).map(it => escapeAdminHtml(it.name || it.code || '')).join(', ');
+  const restCount = items.length - 2;
+  return `${preview}${restCount > 0 ? ` <span style="color:var(--gold)">+${restCount} más</span>` : ''}`;
+}
+
+function pedidoClientePill(p) {
+  const match = matchClienteAdmin(p);
+  if (match) {
+    return `<span class="admin-pill admin-pill-ok">#${escapeAdminHtml(match.codigo)} · ${escapeAdminHtml(match.nombre)}</span>`;
+  }
+  return `<span class="admin-pill admin-pill-off">Sin vincular</span>`;
+}
+
+function renderPedidosRows(reset) {
+  const body = document.getElementById('adminListBody');
+  if (reset) body.innerHTML = '';
+  const soloSinVincular = document.getElementById('adminPedidosSoloSinVincular').checked;
+  const rows = adminPedidosRows.filter(p => !soloSinVincular || !matchClienteAdmin(p));
+  if (!rows.length) {
+    body.innerHTML = '<p class="admin-msg">Sin pedidos con estos filtros.</p>';
+    return;
+  }
+  body.innerHTML = rows.map(p => {
+    const items = Array.isArray(p.items) ? p.items : [];
+    return `
+    <div class="admin-list">
+      <div class="admin-row" onclick="toggleAdminPedidoDetail('${p.id}')">
+        <div class="admin-row-main">
+          <div class="admin-row-title">${escapeAdminHtml(p.cliente_nombre)} <span style="color:var(--muted); font-weight:400;">· ${fmtDateAdmin(p.creado_en)}</span></div>
+          <div class="admin-row-sub">${escapeAdminHtml(p.cliente_telefono || '')} · ${pedidoProductsPreview(items)} · ${p.total_unidades} uds</div>
+        </div>
+        ${pedidoClientePill(p)}
+      </div>
+      <div id="adminEditWrap-o${p.id}"></div>
+    </div>
+  `;
+  }).join('');
+}
+
+function toggleAdminPedidoDetail(id) {
+  const wrap = document.getElementById(`adminEditWrap-o${id}`);
+  if (!wrap) return;
+  if (adminEditingId === id) {
+    wrap.innerHTML = '';
+    adminEditingId = null;
+    return;
+  }
+  document.querySelectorAll('[id^="adminEditWrap-o"]').forEach(w => w.innerHTML = '');
+  adminEditingId = id;
+  const p = adminPedidosRows.find(x => x.id === id);
+  if (!p) return;
+  const items = Array.isArray(p.items) ? p.items : [];
+  const match = matchClienteAdmin(p);
+  const itemsHtml = items.length
+    ? items.map(it => `
+        <div class="admin-pedido-item">
+          <span>${escapeAdminHtml(it.brand || '')} — ${escapeAdminHtml(it.name || '')} <span style="color:var(--muted)">(${escapeAdminHtml(it.code || '')})</span></span>
+          <b>${it.qty}</b>
+        </div>`).join('')
+    : '<span style="color:var(--muted)">Sin detalle de productos</span>';
+  const linkHtml = match ? '' : `
+    <div class="admin-link-form">
+      <input type="text" class="field-input" id="adminVincularInput-${id}" list="adminClientesDatalist" placeholder="Buscar cliente real (nombre)...">
+      <button type="button" class="btn btn-primary" onclick="vincularPedidoAdmin('${id}')">Vincular</button>
+    </div>
+  `;
+  wrap.innerHTML = `<div class="admin-pedido-detail">${itemsHtml}${linkHtml}</div>`;
+}
+
+async function vincularPedidoAdmin(id) {
+  const input = document.getElementById(`adminVincularInput-${id}`);
+  const raw = input ? input.value : '';
+  const m = /—\s*#(\S+)\s*$/.exec(raw);
+  if (!m) {
+    adminSetMsg('Elige un cliente de la lista (empieza a escribir el nombre).', 'error');
+    return;
+  }
+  const codigo = m[1];
+  try {
+    const resp = await adminFetch(`pedidos?id=eq.${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ cliente_codigo: codigo })
+    });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const p = adminPedidosRows.find(x => x.id === id);
+    if (p) p.cliente_codigo = codigo;
+    adminSetMsg('Pedido vinculado.', 'ok');
+    toggleAdminPedidoDetail(id);
+    renderPedidosRows(true);
+    renderPedidosSummary();
+  } catch (err) {
+    adminSetMsg('Error al vincular: ' + err.message, 'error');
+  }
+}
+
+function renderPedidosSummary() {
+  const el = document.getElementById('adminPedidosSummary');
+  const totalPedidos = adminPedidosRows.length;
+  const totalUnidades = adminPedidosRows.reduce((s, p) => s + (p.total_unidades || 0), 0);
+  const vinculados = adminPedidosRows.filter(p => matchClienteAdmin(p)).length;
+  const sinVincular = totalPedidos - vinculados;
+  el.innerHTML = `
+    <div class="admin-stat"><div class="admin-stat-n">${totalPedidos}</div><div class="admin-stat-l">Pedidos cargados</div></div>
+    <div class="admin-stat"><div class="admin-stat-n">${totalUnidades}</div><div class="admin-stat-l">Unidades pedidas</div></div>
+    <div class="admin-stat"><div class="admin-stat-n">${vinculados}</div><div class="admin-stat-l">Cruzados con cliente real</div></div>
+    <div class="admin-stat"><div class="admin-stat-n ${sinVincular ? 'is-warn' : ''}">${sinVincular}</div><div class="admin-stat-l">Sin vincular</div></div>
+  `;
+}
+
+async function exportAdminPedidosExcel() {
+  if (typeof ExcelJS === 'undefined') {
+    adminSetMsg('Librería Excel no cargó, revisa tu conexión a internet.', 'error');
+    return;
+  }
+  if (!adminPedidosRows.length) {
+    adminSetMsg('No hay pedidos cargados para exportar.', 'error');
+    return;
+  }
+  const wb = new ExcelJS.Workbook();
+  const sheet = wb.addWorksheet('Pedidos');
+  sheet.columns = [
+    { header: 'Fecha', key: 'fecha', width: 20 },
+    { header: 'Cliente (como se escribió)', key: 'clienteEscrito', width: 30 },
+    { header: 'Teléfono', key: 'telefono', width: 16 },
+    { header: 'Código cliente (sistema)', key: 'codigoCliente', width: 20 },
+    { header: 'Cliente (sistema)', key: 'clienteSistema', width: 30 },
+    { header: 'Código producto', key: 'codigo', width: 16 },
+    { header: 'Producto', key: 'producto', width: 45 },
+    { header: 'Marca', key: 'marca', width: 20 },
+    { header: 'Cantidad', key: 'cantidad', width: 12 }
+  ];
+  sheet.getRow(1).font = { bold: true };
+  adminPedidosRows.forEach(p => {
+    const match = matchClienteAdmin(p);
+    const items = Array.isArray(p.items) && p.items.length ? p.items : [{}];
+    items.forEach(it => {
+      sheet.addRow({
+        fecha: fmtDateAdmin(p.creado_en),
+        clienteEscrito: p.cliente_nombre,
+        telefono: p.cliente_telefono,
+        codigoCliente: match ? match.codigo : '',
+        clienteSistema: match ? match.nombre : 'Sin vincular',
+        codigo: it.code || '',
+        producto: it.name || '',
+        marca: it.brand || '',
+        cantidad: it.qty || ''
+      });
+    });
+  });
+  const buffer = await wb.xlsx.writeBuffer();
+  const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `Reporte_Pedidos_${new Date().toISOString().slice(0, 10)}.xlsx`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }

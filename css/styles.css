@@ -1440,6 +1440,16 @@ body.dark .calc-grid button:hover { filter: brightness(1.2); }
 .admin-msg { font-size: 13px; color: var(--muted); margin: 6px 0 12px; min-height: 16px; }
 .admin-msg.is-error { color: var(--danger); }
 .admin-msg.is-ok { color: var(--ok); }
+.admin-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin-bottom: 14px; }
+.admin-stat { background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--r-sm); padding: 10px 12px; }
+.admin-stat .admin-stat-n { font-size: 20px; font-weight: 600; color: var(--gold); }
+.admin-stat .admin-stat-n.is-warn { color: var(--danger); }
+.admin-stat .admin-stat-l { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.admin-pedido-detail { padding: 10px 12px; border: 1px dashed var(--line); border-radius: var(--r-sm); margin-top: 4px; background: var(--surface); }
+.admin-pedido-item { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px dashed var(--line); font-size: 13px; }
+.admin-pedido-item:last-child { border-bottom: none; }
+.admin-link-form { display: flex; gap: 6px; align-items: center; margin-top: 6px; }
+.admin-link-form input { flex: 1; min-width: 160px; }
 .admin-list { display: flex; flex-direction: column; gap: 6px; }
 .admin-row {
   display: flex; align-items: center; gap: 12px; padding: 10px 12px;
