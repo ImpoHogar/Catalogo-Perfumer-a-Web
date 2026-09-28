@@ -18,7 +18,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/styles.css?v=20260923a">
+<link rel="stylesheet" href="css/styles.css?v=20260928a">
 </head>
 <body>
 <noscript>
@@ -54,39 +54,68 @@
   </div>
 </div>
 
-<!-- ============ VITRINA DE ENTRADA ============ -->
+<!-- ============ TE PUEDE INTERESAR (pantalla de entrada) ============ -->
 <!-- Va DESPUES de #gate a proposito: comparte su z-index, asi queda
      dibujada encima y al esconderse aparece la pantalla de clave de
-     siempre, sin tocar su HTML ni su logica. -->
-<div id="vitrina" class="vitrina" role="region" aria-label="Vitrina de Grupo ImpoHogar">
+     siempre, sin tocar su HTML ni su logica. La arma js/showcase.js
+     con los codigos de js/promos.js. -->
+<div id="vitrina" class="vitrina" role="region" aria-label="Te puede interesar">
+  <div class="tp-wall" aria-hidden="true"><div class="tp-wall-track" id="tpWall"></div></div>
+  <div class="tp-veil" aria-hidden="true"></div>
 
-  <div class="vt-topbar">
-    <img src="img/logo-dark.png" alt="Grupo Impohogar" class="vt-logo">
-    <button type="button" class="vt-skip" onclick="entrarAlCatalogo()" aria-label="Entrar al catálogo">
-      Entrar<span class="vt-skip-long"> al catálogo</span>
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-    </button>
+  <div class="tp-app">
+    <div class="tp-top">
+      <img src="img/logo-dark.png" alt="Grupo Impohogar">
+      <button type="button" class="tp-btn-out" data-tp="explorar" aria-label="Explorar catálogo">
+        <span>Explorar catálogo</span>
+        <svg class="tp-arr" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </button>
+    </div>
+
+    <section class="tp-hero">
+      <div class="tp-copy">
+        <div class="tp-intro">
+          <p class="tp-kicker"><i></i>Selección ImpoHogar</p>
+          <h1 class="tp-title">Te puede<br>interesar</h1>
+          <p class="tp-lead">Descubre nuestra selección especial</p>
+        </div>
+        <div class="tp-prod tp-out" id="tpProd" aria-live="polite">
+          <p class="tp-brand" id="tpBrand"></p>
+          <h2 class="tp-name" id="tpName"></h2>
+          <div class="tp-tags" id="tpTags"></div>
+          <p class="tp-notes" id="tpNotes"></p>
+          <div class="tp-acts">
+            <button type="button" class="tp-btn-go" data-tp="descubrir">
+              Descubrir producto
+              <svg class="tp-arr" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </button>
+            <div class="tp-nav">
+              <button type="button" data-tp="prev" aria-label="Producto anterior"><svg class="tp-arr" viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></button>
+              <span class="tp-count" id="tpCount"></span>
+              <button type="button" data-tp="next" aria-label="Producto siguiente"><svg class="tp-arr" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="tp-stage">
+        <div class="tp-frame" id="tpFrame"></div>
+        <div class="tp-timer" aria-hidden="true"><i id="tpBar"></i></div>
+      </div>
+    </section>
+
+    <section class="tp-row">
+      <h2 class="tp-row-title">También podría interesarte</h2>
+      <div class="tp-row-g" id="tpRel"></div>
+    </section>
+
+    <footer class="tp-foot">
+      <p>Acceso con clave · exclusivo para clientes mayoristas</p>
+      <button type="button" class="tp-btn-go" data-tp="explorar">
+        Explorar catálogo
+        <svg class="tp-arr" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </button>
+    </footer>
   </div>
-
-  <header class="vt-hero">
-    <p class="vt-eyebrow">Distribución mayorista de perfumería</p>
-    <h1 class="vt-title">Antes de entrar,<br><em>pase por la vitrina.</em></h1>
-    <p class="vt-lead">Una muestra de lo que hay hoy en bodega: los ingresos más recientes, fragancias de hombre y mujer, y estuchería.</p>
-  </header>
-
-  <div class="vt-ticker" aria-hidden="true">
-    <div class="vt-ticker-track" id="vtTickerTrack"></div>
-  </div>
-
-  <div class="vt-rows" id="vtRows"></div>
-
-  <footer class="vt-foot">
-    <button type="button" class="vt-cta" onclick="entrarAlCatalogo()">
-      Entrar al catálogo
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-    </button>
-    <p class="vt-foot-note">Acceso con clave · exclusivo para clientes mayoristas</p>
-  </footer>
 </div>
 
 <div id="mainContent" style="display:none;">
@@ -391,8 +420,8 @@
 
 <!-- El ORDEN de estos archivos importa: no los reordenes. -->
 <script defer src="js/config.js?v=20260924a"></script>
-<script defer src="js/products.js?v=20260924a"></script>
-<script defer src="js/stock.js?v=20260924a"></script>
+<script defer src="js/products.js?v=20260928a"></script>
+<script defer src="js/stock.js?v=20260928a"></script>
 <script defer src="js/data.js?v=20260921e"></script>
 <script defer src="js/utils.js?v=20260921e"></script>
 <script defer src="js/dupes.js?v=20260921e"></script>
@@ -403,7 +432,8 @@
 <script defer src="js/history.js?v=20260921e"></script>
 <script defer src="js/calculator.js?v=20260921e"></script>
 <script defer src="js/lightbox.js?v=20260921e"></script>
-<script defer src="js/showcase.js?v=20260923a"></script>
+<script defer src="js/promos.js?v=20260928a"></script>
+<script defer src="js/showcase.js?v=20260928a"></script>
 <script defer src="js/gate.js?v=20260921e"></script>
 <script defer src="js/feedback.js?v=20260921e"></script>
 <script defer src="js/main.js?v=20260921e"></script>
