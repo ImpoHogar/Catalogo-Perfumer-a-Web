@@ -18,7 +18,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/styles.css?v=20260928a">
+<link rel="stylesheet" href="css/styles.css?v=20260928c">
 </head>
 <body>
 <noscript>
@@ -123,7 +123,7 @@
 <!-- ============ ENCABEZADO ============ -->
 <header class="site-header" id="siteHeader">
   <div class="header-inner">
-    <a class="header-logo" href="#top" onclick="window.scrollTo({top:0,behavior:'smooth'}); return false;" aria-label="Grupo Impohogar, volver arriba">
+    <a class="header-logo" id="headerLogo" href="#top" onclick="window.scrollTo({top:0,behavior:'smooth'}); return false;" aria-label="Grupo Impohogar, volver arriba">
       <img class="brand-logo" src="img/logo.png" alt="Grupo Impohogar">
       <img class="brand-logo-dark" src="img/logo-dark.png" alt="Grupo Impohogar">
     </a>
@@ -362,6 +362,47 @@
   </div>
 </div>
 
+<div id="adminLoginModal" class="order-modal" onclick="if(event.target===this) closeAdminLogin()">
+  <div class="order-card order-card-narrow" role="dialog" aria-modal="true" aria-labelledby="adminLoginTitle">
+    <div class="order-header">
+      <h3 id="adminLoginTitle">Panel administrativo</h3>
+      <button type="button" onclick="closeAdminLogin()" aria-label="Cerrar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    </div>
+    <div class="form-body">
+      <label class="field-label" for="adminLoginEmail">Correo</label>
+      <input id="adminLoginEmail" class="field-input" type="email" autocomplete="username">
+      <label class="field-label" for="adminLoginPassword">Contraseña</label>
+      <input id="adminLoginPassword" class="field-input" type="password" autocomplete="current-password" onkeydown="if(event.key==='Enter') submitAdminLogin()">
+      <div id="adminLoginError" class="field-error" role="alert"></div>
+    </div>
+    <div class="order-footer order-footer-end">
+      <button type="button" onclick="submitAdminLogin()">Iniciar sesión</button>
+    </div>
+  </div>
+</div>
+
+<div id="adminPanelModal" class="order-modal" onclick="if(event.target===this) closeAdminPanel()">
+  <div class="order-card order-card-admin" role="dialog" aria-modal="true" aria-labelledby="adminPanelTitle">
+    <div class="order-header">
+      <h3 id="adminPanelTitle">Panel administrativo</h3>
+      <button type="button" onclick="closeAdminPanel()" aria-label="Cerrar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    </div>
+    <div class="admin-tabs">
+      <button type="button" id="adminTabProductos" class="admin-tab" onclick="switchAdminTab('productos')">Productos</button>
+      <button type="button" id="adminTabClientes" class="admin-tab" onclick="switchAdminTab('clientes')">Clientes</button>
+    </div>
+    <div class="admin-body">
+      <div class="admin-toolbar">
+        <input id="adminSearchInput" class="field-input" type="search" placeholder="Buscar..." oninput="onAdminSearch()">
+        <button type="button" class="btn btn-primary" onclick="adminTab==='productos' ? openAdminNewProduct() : openAdminNewClient()">+ Agregar</button>
+        <button type="button" class="btn btn-ghost" onclick="adminLogout()">Cerrar sesión</button>
+      </div>
+      <div id="adminMsg" class="admin-msg"></div>
+      <div id="adminListBody"></div>
+    </div>
+  </div>
+</div>
+
 <div id="calcModal" class="order-modal" onclick="if(event.target===this) closeCalculator()">
   <div class="calc-card" role="dialog" aria-modal="true" aria-labelledby="calcModalTitle">
     <div class="calc-header">
@@ -435,6 +476,7 @@
 <script defer src="js/showcase.js?v=20260928a"></script>
 <script defer src="js/gate.js?v=20260921e"></script>
 <script defer src="js/feedback.js?v=20260921e"></script>
+<script defer src="js/admin.js?v=20260928a"></script>
 <script defer src="js/main.js?v=20260928a"></script>
 </body>
 </html>

@@ -1424,3 +1424,44 @@ body.dark .calc-grid button:hover { filter: brightness(1.2); }
   .brand-marquee-track { animation: none; }
   .hero-media-slide img { transform: none !important; }
 }
+
+/* ---------- 19. Panel administrativo (oculto) ---------- */
+.order-card-admin { max-width: 920px; width: 92vw; }
+.admin-tabs { display: flex; gap: 8px; padding: 0 26px; border-bottom: 1px solid var(--line); }
+.admin-tab {
+  border: none; background: transparent; padding: 12px 4px; margin-right: 18px;
+  font-size: 13px; font-weight: 500; letter-spacing: .04em; color: var(--muted);
+  border-bottom: 2px solid transparent; cursor: pointer;
+}
+.admin-tab.active { color: var(--ink); border-bottom-color: var(--gold); }
+.admin-body { padding: 18px 26px 24px; overflow-y: auto; flex: 1; min-height: 0; }
+.admin-toolbar { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; flex-wrap: wrap; }
+.admin-toolbar .field-input { flex: 1; min-width: 200px; margin: 0; height: 40px; }
+.admin-msg { font-size: 13px; color: var(--muted); margin: 6px 0 12px; min-height: 16px; }
+.admin-msg.is-error { color: var(--danger); }
+.admin-msg.is-ok { color: var(--ok); }
+.admin-list { display: flex; flex-direction: column; gap: 6px; }
+.admin-row {
+  display: flex; align-items: center; gap: 12px; padding: 10px 12px;
+  border: 1px solid var(--line); border-radius: var(--r-sm); cursor: pointer; background: var(--surface);
+}
+.admin-row:hover { border-color: var(--gold); }
+.admin-row-main { flex: 1; min-width: 0; }
+.admin-row-title { font-size: 13.5px; font-weight: 500; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.admin-row-sub { font-size: 12px; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.admin-pill { font-size: 10.5px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; white-space: nowrap; }
+.admin-pill-ok { background: var(--gold-soft); color: var(--gold); }
+.admin-pill-off { background: var(--surface-2); color: var(--muted); }
+.admin-edit-panel { margin-top: 12px; padding: 16px; border: 1px solid var(--line-strong); border-radius: var(--r-md); background: var(--surface-2); }
+.admin-edit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px; }
+.admin-edit-grid .field-full { grid-column: 1 / -1; }
+.admin-edit-grid .field-label { margin-top: 4px; }
+.admin-checkbox-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+.admin-checkbox-row label { font-size: 13px; color: var(--ink); }
+.admin-edit-actions { display: flex; justify-content: space-between; gap: 10px; margin-top: 16px; }
+.admin-edit-actions .btn-danger { background: transparent; color: var(--danger); border: 1px solid var(--danger); }
+.admin-edit-actions .btn-danger:hover { background: var(--danger); color: #fff; }
+@media (max-width: 680px) {
+  .admin-edit-grid { grid-template-columns: 1fr; }
+  .order-card-admin { width: 100vw; }
+}
