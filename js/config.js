@@ -5,6 +5,16 @@
 //  deberia necesitar tocarse para estos ajustes.
 // ============================================================
 
+// ============================================================
+//  BASE DE DATOS DE PEDIDOS Y CLIENTES (Supabase)
+// ============================================================
+//  Estas dos llaves son publicas a proposito: la ANON_KEY solo permite,
+//  desde el catalogo, LEER la lista de clientes e INSERTAR pedidos
+//  nuevos. No permite leer, editar ni borrar pedidos existentes (eso
+//  esta bloqueado del lado del servidor, ver reglas en Supabase).
+const SUPABASE_URL = "https://wzntsmbnsiafebfojaww.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_5eCDbAxlk-Q6nreXo0dhgQ_Gjq7pY0s";
+
 // Sube esta fecha cada vez que reemplaces fotos de la carpeta img/,
 // para que el navegador de los clientes no sirva la imagen vieja.
 const IMG_VERSION = "20260923";
