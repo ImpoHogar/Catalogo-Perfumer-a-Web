@@ -23,7 +23,14 @@ const IMG_VERSION = "20260923";
 // (reemplaza al aviso de "fotos cargadas / agotados"). Cada logo debe
 // estar guardado en img/marcas/<archivo>. Para agregar o quitar una
 // marca, solo hay que editar esta lista -- no hace falta tocar main.js.
-const MARCAS_CARRUSEL = [
+// Estos 3 valores ahora tambien viven en la tabla ajustes_catalogo de
+// Supabase, editables desde el panel administrativo (pestaña Ajustes).
+// Lo de aca abajo queda solo como respaldo: si por lo que sea el
+// catalogo no logra traer los ajustes de Supabase (sin internet,
+// Supabase caido, etc.), usa estos valores en vez de quedarse sin
+// nada. Son "let" (no "const") para que js/products-loader.js pueda
+// reemplazarlos con los valores reales apenas los trae.
+let MARCAS_CARRUSEL = [
   { nombre: "Jean Paul Gaultier", archivo: "jeanpaulgaultier.png" },
   { nombre: "Nautica", archivo: "nautica.png" },
   { nombre: "Hugo Boss", archivo: "hugoboss.png" },
@@ -124,9 +131,9 @@ const CATEGORIA_ICONOS = {
 //  Para cambiar de lotes en el futuro, solo hay que editar el array
 //  LOW_ROTATION_BATCHES de aca abajo.
 // ============================================================
-const LOW_ROTATION_START_DATE = "2026-09-21";
+let LOW_ROTATION_START_DATE = "2026-09-21";
 
-const LOW_ROTATION_BATCHES = [
+let LOW_ROTATION_BATCHES = [
   ["6290171071044", "3423222106508", "3614274101461", "3614274411164", "3616305187574"], // AFNAN ZIMAYA ROYAL LEATHER U 100ML EDP | ESTUCHE ISSEY MIYAKE L EAU D ISSEY 3PCS | ESTUCHE AZZARO MOST WANTED EDP 3PCS | ESTUCHE  AZZARO MOST WANTED 3PCS | COOL WATER RBORN P M EDP 100ML INT IV
   ["3616305187598", "6290171073307", "6294015105230", "6297001158029", "6297001158593"], // COOL WATER RBORN P W EDP 100ML INT IV | AFNAN ZIMAYA TARAF WHITE U 100ML EDP | ESTUCHE ARMAF OPUS FEMME 4PCS M | ORIENTICA XO XLUSIF OUD SPORT 60ML EDP U | ESTUCHE ORIENTICA AMBER NOIR 3PZA
   ["8433982027123", "98691046223", "0268514932570", "085715321312", "085715962164"], // BENETON COLORS ROSE M | CURVE CONNECT 100ML EDT M | TESTER ROYAL AMBER 150ML | GUESS NIGHT 100ML EDT H | ESTUCHE DKNY 2PC

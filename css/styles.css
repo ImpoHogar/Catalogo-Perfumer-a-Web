@@ -1471,7 +1471,16 @@ body.dark .calc-grid button:hover { filter: brightness(1.2); }
 .admin-edit-actions { display: flex; justify-content: space-between; gap: 10px; margin-top: 16px; }
 .admin-edit-actions .btn-danger { background: transparent; color: var(--danger); border: 1px solid var(--danger); }
 .admin-edit-actions .btn-danger:hover { background: var(--danger); color: #fff; }
+.admin-ajustes-card { border: 1px solid var(--line); border-radius: var(--r-md); background: var(--surface); padding: 16px; margin-bottom: 18px; }
+.admin-ajustes-title { font-size: 14px; font-weight: 600; color: var(--ink); margin: 0 0 8px; }
+.admin-batch-row, .admin-marca-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.admin-batch-row .admin-batch-n { flex: 0 0 64px; font-size: 12px; color: var(--muted); }
+.admin-batch-row .field-input, .admin-marca-row .field-input { margin: 0; height: 38px; }
+.admin-batch-row .btn, .admin-marca-row .btn { flex: 0 0 auto; padding: 6px 10px; }
+.admin-row-static { cursor: default; }
+.admin-row-static:hover { border-color: var(--line); }
 @media (max-width: 680px) {
   .admin-edit-grid { grid-template-columns: 1fr; }
   .order-card-admin { width: 100vw; }
+  .admin-batch-row, .admin-marca-row { flex-wrap: wrap; }
 }

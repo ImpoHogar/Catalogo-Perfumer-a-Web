@@ -107,7 +107,8 @@ async function submitAdminLogin() {
     }
     saveAdminSession({
       access_token: data.access_token,
-      expires_at: Date.now() + ((data.expires_in || 3600) * 1000) - 30000
+      expires_at: Date.now() + ((data.expires_in || 3600) * 1000) - 30000,
+      email
     });
     closeAdminLogin();
     openAdminPanel();
@@ -147,6 +148,28 @@ async function adminFetch(path, options = {}) {
   return resp;
 }
 
+// ---------- Historial de cambios (auditoria_admin) ----------
+// Se llama despues de cada accion que modifica algo (crear/editar/
+// eliminar producto o cliente, vincular pedido, guardar ajustes).
+// Nunca bloquea ni muestra error si falla: el historial es un extra,
+// no una condicion para que la accion principal funcione.
+async function logAdminAction(accion, entidad, entidadId, detalle) {
+  try {
+    await adminFetch('auditoria_admin', {
+      method: 'POST',
+      body: JSON.stringify([{
+        admin_email: (adminSession && adminSession.email) || null,
+        accion,
+        entidad,
+        entidad_id: entidadId != null ? String(entidadId) : null,
+        detalle: detalle || null
+      }])
+    });
+  } catch (err) {
+    // silencioso a proposito
+  }
+}
+
 // ---------- Panel principal ----------
 function openAdminPanel() {
   adminEditingId = null;
@@ -164,19 +187,25 @@ function switchAdminTab(tab) {
   document.getElementById('adminTabProductos').classList.toggle('active', tab === 'productos');
   document.getElementById('adminTabClientes').classList.toggle('active', tab === 'clientes');
   document.getElementById('adminTabPedidos').classList.toggle('active', tab === 'pedidos');
+  document.getElementById('adminTabAjustes').classList.toggle('active', tab === 'ajustes');
+  document.getElementById('adminTabHistorial').classList.toggle('active', tab === 'historial');
   document.getElementById('adminSearchInput').value = '';
-  document.getElementById('adminAddBtn').style.display = tab === 'pedidos' ? 'none' : '';
+  document.getElementById('adminSearchInput').style.display = tab === 'ajustes' ? 'none' : '';
+  document.getElementById('adminAddBtn').style.display = (tab === 'pedidos' || tab === 'ajustes' || tab === 'historial') ? 'none' : '';
   document.getElementById('adminPedidosFilters').style.display = tab === 'pedidos' ? 'flex' : 'none';
   document.getElementById('adminPedidosSummary').style.display = tab === 'pedidos' ? 'grid' : 'none';
   document.getElementById('adminPedidosLoadMoreWrap').style.display = 'none';
   if (tab === 'productos') document.getElementById('adminSearchInput').placeholder = 'Buscar por código, nombre o marca...';
   else if (tab === 'clientes') document.getElementById('adminSearchInput').placeholder = 'Buscar por código, nombre o teléfono...';
-  else document.getElementById('adminSearchInput').placeholder = 'Buscar cliente por nombre o teléfono...';
+  else if (tab === 'pedidos') document.getElementById('adminSearchInput').placeholder = 'Buscar cliente por nombre o teléfono...';
+  else if (tab === 'historial') document.getElementById('adminSearchInput').placeholder = 'Buscar por acción, entidad o correo...';
   document.getElementById('adminMsg').textContent = '';
   document.getElementById('adminListBody').innerHTML = '';
   if (tab === 'productos') loadProductosAdmin('');
   else if (tab === 'clientes') loadClientesAdmin('');
-  else loadPedidosAdmin(true);
+  else if (tab === 'pedidos') loadPedidosAdmin(true);
+  else if (tab === 'ajustes') loadAjustesAdmin();
+  else loadHistorialAdmin(true);
 }
 
 function adminSetMsg(text, kind) {
@@ -192,8 +221,9 @@ function onAdminSearch() {
     const term = document.getElementById('adminSearchInput').value.trim();
     if (adminTab === 'productos') loadProductosAdmin(term);
     else if (adminTab === 'clientes') loadClientesAdmin(term);
-    else loadPedidosAdmin(true);
-  }, adminTab === 'pedidos' ? 350 : 0);
+    else if (adminTab === 'pedidos') loadPedidosAdmin(true);
+    else if (adminTab === 'historial') loadHistorialAdmin(true);
+  }, (adminTab === 'pedidos' || adminTab === 'historial') ? 350 : 0);
 }
 
 // ============================================================
@@ -344,6 +374,7 @@ async function saveAdminProducto(id) {
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
     const rows = await resp.json();
     applyProductChangeToLiveCatalog(rows[0]);
+    logAdminAction('editar', 'producto', id, { brand: payload.brand, name: payload.name, code: payload.code });
     adminSetMsg('Producto actualizado.', 'ok');
     toggleAdminProductEdit(id);
     loadProductosAdmin(document.getElementById('adminSearchInput').value.trim());
@@ -358,6 +389,7 @@ async function deleteAdminProducto(id) {
     const resp = await adminFetch(`productos?id=eq.${id}`, { method: 'DELETE' });
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
     applyProductChangeToLiveCatalog({ id }, true);
+    logAdminAction('eliminar', 'producto', id, null);
     adminSetMsg('Producto eliminado.', 'ok');
     loadProductosAdmin(document.getElementById('adminSearchInput').value.trim());
   } catch (err) {
@@ -425,6 +457,7 @@ async function saveAdminNewProduct() {
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
     const rows = await resp.json();
     applyProductChangeToLiveCatalog(rows[0]);
+    logAdminAction('crear', 'producto', nextId, { brand, name, code });
     adminSetMsg(`Producto creado con id ${nextId}. Recuerda subir la foto como img/p${nextId}.webp.`, 'ok');
     loadProductosAdmin('');
   } catch (err) {
@@ -567,6 +600,7 @@ async function saveAdminCliente(codigo) {
       body: JSON.stringify(payload)
     });
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    logAdminAction('editar', 'cliente', codigo, { nombre: payload.nombre });
     adminSetMsg('Cliente actualizado.', 'ok');
     toggleAdminClientEdit(codigo);
     loadClientesAdmin(document.getElementById('adminSearchInput').value.trim());
@@ -580,6 +614,7 @@ async function deleteAdminCliente(codigo) {
   try {
     const resp = await adminFetch(`clientes?codigo=eq.${encodeURIComponent(codigo)}`, { method: 'DELETE' });
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    logAdminAction('eliminar', 'cliente', codigo, null);
     adminSetMsg('Cliente eliminado.', 'ok');
     loadClientesAdmin(document.getElementById('adminSearchInput').value.trim());
   } catch (err) {
@@ -639,6 +674,7 @@ async function saveAdminNewClient() {
       if (resp.status === 409) throw new Error('Ese código ya existe.');
       throw new Error('HTTP ' + resp.status);
     }
+    logAdminAction('crear', 'cliente', codigo, { nombre });
     adminSetMsg(`Cliente creado con código ${codigo}.`, 'ok');
     loadClientesAdmin('');
   } catch (err) {
@@ -841,6 +877,7 @@ async function vincularPedidoAdmin(id) {
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
     const p = adminPedidosRows.find(x => x.id === id);
     if (p) p.cliente_codigo = codigo;
+    logAdminAction('vincular', 'pedido', id, { cliente_codigo: codigo });
     adminSetMsg('Pedido vinculado.', 'ok');
     toggleAdminPedidoDetail(id);
     renderPedidosRows(true);
@@ -914,4 +951,274 @@ async function exportAdminPedidosExcel() {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+}
+
+// ============================================================
+//  AJUSTES (lotes de baja rotación / nuevos ingresos + marcas carrusel)
+// ============================================================
+//  Ambos viven en la tabla ajustes_catalogo (una fila con clave
+//  "low_rotation" y otra con clave "marcas_carrusel"). Al guardar,
+//  ademas de escribir en Supabase, se actualizan las variables
+//  globales que ya usa el catalogo (LOW_ROTATION_START_DATE,
+//  LOW_ROTATION_BATCHES, MARCAS_CARRUSEL -- declaradas con "let" en
+//  config.js, por eso se reasignan por su nombre tal cual, sin
+//  "window.") para que el cambio se vea al instante sin recargar.
+// ============================================================
+
+let adminAjustesLowRotation = null; // { start_date, batches: [[codigo,...], ...] }
+let adminAjustesMarcas = null;      // [{ nombre, archivo }, ...]
+
+async function loadAjustesAdmin() {
+  adminSetMsg('Cargando...');
+  document.getElementById('adminListBody').innerHTML = '';
+  try {
+    const resp = await adminFetch('ajustes_catalogo?select=clave,valor');
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const rows = await resp.json();
+    const lr = rows.find(r => r.clave === 'low_rotation');
+    const mc = rows.find(r => r.clave === 'marcas_carrusel');
+    adminAjustesLowRotation = (lr && lr.valor) ? lr.valor : { start_date: '', batches: [] };
+    if (!Array.isArray(adminAjustesLowRotation.batches)) adminAjustesLowRotation.batches = [];
+    adminAjustesMarcas = (mc && Array.isArray(mc.valor)) ? mc.valor : [];
+    renderAjustesAdmin();
+    adminSetMsg('');
+  } catch (err) {
+    adminSetMsg('Error al cargar ajustes: ' + err.message, 'error');
+  }
+}
+
+function renderAjustesAdmin() {
+  const body = document.getElementById('adminListBody');
+  const lr = adminAjustesLowRotation;
+  const batchesHtml = lr.batches.map((batch, i) => `
+    <div class="admin-batch-row" data-batch-idx="${i}">
+      <span class="admin-batch-n">Lote ${i + 1}</span>
+      <input class="field-input" data-batch-codes value="${escapeAdminHtml(batch.join(', '))}" placeholder="Códigos de barras separados por coma">
+      <button type="button" class="btn btn-ghost" onclick="removeAjusteBatchRow(${i})" title="Eliminar lote">✕</button>
+    </div>
+  `).join('');
+  const marcasHtml = adminAjustesMarcas.map((m, i) => `
+    <div class="admin-marca-row" data-marca-idx="${i}">
+      <input class="field-input" data-marca-nombre value="${escapeAdminHtml(m.nombre || '')}" placeholder="Nombre de la marca">
+      <input class="field-input" data-marca-archivo value="${escapeAdminHtml(m.archivo || '')}" placeholder="Archivo, ej: afnan.png">
+      <button type="button" class="btn btn-ghost" onclick="removeAjusteMarcaRow(${i})" title="Eliminar marca">✕</button>
+    </div>
+  `).join('');
+  body.innerHTML = `
+    <div class="admin-ajustes-card">
+      <h3 class="admin-ajustes-title">Baja rotación / Nuevos Ingresos</h3>
+      <p class="admin-msg">Cada semana se muestra un lote distinto de estos productos en la vitrina de "Nuevos Ingresos", rotando en el orden en que aparecen aquí. Escribe los códigos de barras de cada lote separados por coma.</p>
+      <div class="admin-edit-grid" style="margin-bottom:12px;">
+        <div>
+          <label class="field-label">Fecha de inicio de la rotación</label>
+          <input class="field-input" id="ajLowRotationStart" type="date" value="${escapeAdminHtml(lr.start_date || '')}">
+        </div>
+      </div>
+      <div id="ajBatchesWrap">${batchesHtml || '<p class="admin-msg">Sin lotes todavía.</p>'}</div>
+      <div class="admin-edit-actions">
+        <button type="button" class="btn btn-ghost" onclick="addAjusteBatchRow()">+ Agregar lote</button>
+        <button type="button" class="btn btn-primary" onclick="saveAjustesLowRotation()">Guardar rotación</button>
+      </div>
+    </div>
+    <div class="admin-ajustes-card">
+      <h3 class="admin-ajustes-title">Marcas del carrusel</h3>
+      <p class="admin-msg">El orden de esta lista es el orden en que aparecen en el carrusel de marcas. La imagen se sigue subiendo a mano al repositorio (img/marcas/) — aquí solo se indica el nombre del archivo, y debe coincidir exactamente.</p>
+      <div id="ajMarcasWrap">${marcasHtml || '<p class="admin-msg">Sin marcas todavía.</p>'}</div>
+      <div class="admin-edit-actions">
+        <button type="button" class="btn btn-ghost" onclick="addAjusteMarcaRow()">+ Agregar marca</button>
+        <button type="button" class="btn btn-primary" onclick="saveAjustesMarcas()">Guardar marcas</button>
+      </div>
+    </div>
+  `;
+}
+
+function readAjustesBatchesFromDom() {
+  const rows = document.querySelectorAll('#ajBatchesWrap [data-batch-codes]');
+  return Array.from(rows)
+    .map(inp => inp.value.split(',').map(s => s.trim()).filter(Boolean))
+    .filter(batch => batch.length);
+}
+
+function readAjustesMarcasFromDom() {
+  const rows = document.querySelectorAll('#ajMarcasWrap [data-marca-idx]');
+  return Array.from(rows)
+    .map(row => ({
+      nombre: row.querySelector('[data-marca-nombre]').value.trim(),
+      archivo: row.querySelector('[data-marca-archivo]').value.trim()
+    }))
+    .filter(m => m.nombre && m.archivo);
+}
+
+function addAjusteBatchRow() {
+  adminAjustesLowRotation.batches = readAjustesBatchesFromDom();
+  adminAjustesLowRotation.batches.push([]);
+  renderAjustesAdmin();
+}
+
+function removeAjusteBatchRow(i) {
+  const batches = readAjustesBatchesFromDom();
+  batches.splice(i, 1);
+  adminAjustesLowRotation.batches = batches;
+  renderAjustesAdmin();
+}
+
+function addAjusteMarcaRow() {
+  adminAjustesMarcas = readAjustesMarcasFromDom();
+  adminAjustesMarcas.push({ nombre: '', archivo: '' });
+  renderAjustesAdmin();
+}
+
+function removeAjusteMarcaRow(i) {
+  const marcas = readAjustesMarcasFromDom();
+  marcas.splice(i, 1);
+  adminAjustesMarcas = marcas;
+  renderAjustesAdmin();
+}
+
+async function upsertAjusteRow(clave, valor) {
+  const resp = await adminFetch(`ajustes_catalogo?clave=eq.${clave}`, {
+    method: 'PATCH',
+    headers: { Prefer: 'return=representation' },
+    body: JSON.stringify({ valor, actualizado_en: new Date().toISOString() })
+  });
+  if (!resp.ok) throw new Error('HTTP ' + resp.status);
+  const rows = await resp.json();
+  if (rows.length) return;
+  // No existía la fila todavía (tabla recién creada): se crea ahora.
+  const insResp = await adminFetch('ajustes_catalogo', {
+    method: 'POST',
+    headers: { Prefer: 'return=representation' },
+    body: JSON.stringify([{ clave, valor, actualizado_en: new Date().toISOString() }])
+  });
+  if (!insResp.ok) throw new Error('HTTP ' + insResp.status);
+}
+
+async function saveAjustesLowRotation() {
+  const startDate = document.getElementById('ajLowRotationStart').value;
+  const batches = readAjustesBatchesFromDom();
+  if (!startDate) {
+    adminSetMsg('Elige una fecha de inicio.', 'error');
+    return;
+  }
+  const valor = { start_date: startDate, batches };
+  try {
+    await upsertAjusteRow('low_rotation', valor);
+    adminAjustesLowRotation = valor;
+    // Reasigna las variables "let" de config.js por su nombre (no
+    // "window.") para que getActiveLowRotationBatch() las vea al
+    // instante.
+    LOW_ROTATION_START_DATE = valor.start_date;
+    LOW_ROTATION_BATCHES = valor.batches;
+    if (typeof applyFilters === 'function') applyFilters();
+    logAdminAction('editar', 'low_rotation', null, { start_date: valor.start_date, lotes: valor.batches.length });
+    adminSetMsg('Rotación guardada y aplicada al catálogo.', 'ok');
+    renderAjustesAdmin();
+  } catch (err) {
+    adminSetMsg('Error al guardar: ' + err.message, 'error');
+  }
+}
+
+async function saveAjustesMarcas() {
+  const marcas = readAjustesMarcasFromDom();
+  try {
+    await upsertAjusteRow('marcas_carrusel', marcas);
+    adminAjustesMarcas = marcas;
+    MARCAS_CARRUSEL = marcas;
+    if (typeof renderBrandMarquee === 'function') renderBrandMarquee();
+    logAdminAction('editar', 'marcas_carrusel', null, { total: marcas.length });
+    adminSetMsg('Marcas guardadas y aplicadas al catálogo. Recuerda subir los archivos de imagen nuevos al repositorio.', 'ok');
+    renderAjustesAdmin();
+  } catch (err) {
+    adminSetMsg('Error al guardar: ' + err.message, 'error');
+  }
+}
+
+// ============================================================
+//  HISTORIAL DE CAMBIOS (auditoria_admin)
+// ============================================================
+
+const ADMIN_HISTORIAL_PAGE_SIZE = 50;
+let adminHistorialOffset = 0;
+let adminHistorialRows = [];
+
+function fmtDateTimeAdmin(iso) {
+  const d = new Date(iso);
+  if (isNaN(d)) return iso;
+  return d.toLocaleString('es-CR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+const ADMIN_ACCION_LABELS = { crear: 'Creó', editar: 'Editó', eliminar: 'Eliminó', vincular: 'Vinculó' };
+const ADMIN_ENTIDAD_LABELS = {
+  producto: 'un producto', cliente: 'un cliente', pedido: 'un pedido',
+  low_rotation: 'la rotación de baja rotación', marcas_carrusel: 'las marcas del carrusel'
+};
+
+function historialDetalleTexto(row) {
+  const d = row.detalle;
+  if (!d || typeof d !== 'object') return '';
+  const parts = [];
+  if (d.code) parts.push(`código ${d.code}`);
+  if (d.name) parts.push(d.name);
+  if (d.nombre) parts.push(d.nombre);
+  if (d.cliente_codigo) parts.push(`cliente #${d.cliente_codigo}`);
+  if (d.start_date) parts.push(`inicio ${d.start_date}`);
+  if (typeof d.lotes === 'number') parts.push(`${d.lotes} lote(s)`);
+  if (typeof d.total === 'number') parts.push(`${d.total} marca(s)`);
+  return parts.join(' · ');
+}
+
+function buildHistorialUrl(offset) {
+  const search = document.getElementById('adminSearchInput').value.trim();
+  let url = `auditoria_admin?select=*&order=creado_en.desc&limit=${ADMIN_HISTORIAL_PAGE_SIZE}&offset=${offset}`;
+  if (search) {
+    const t = search.replace(/[,()]/g, '');
+    url += `&or=(accion.ilike.*${t}*,entidad.ilike.*${t}*,entidad_id.ilike.*${t}*,admin_email.ilike.*${t}*)`;
+  }
+  return url;
+}
+
+async function loadHistorialAdmin(reset) {
+  if (reset) {
+    adminHistorialOffset = 0;
+    adminHistorialRows = [];
+    document.getElementById('adminListBody').innerHTML = '';
+  }
+  adminSetMsg('Cargando...');
+  try {
+    const resp = await adminFetch(buildHistorialUrl(adminHistorialOffset));
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const data = await resp.json();
+    adminHistorialRows = adminHistorialRows.concat(data);
+    renderHistorialAdmin();
+    document.getElementById('adminPedidosLoadMoreWrap').style.display = data.length < ADMIN_HISTORIAL_PAGE_SIZE ? 'none' : 'block';
+    adminHistorialOffset += data.length;
+    adminSetMsg(adminHistorialRows.length ? `${adminHistorialRows.length} registro(s) cargado(s)` : 'Sin registros todavía.');
+  } catch (err) {
+    adminSetMsg('Error al cargar el historial: ' + err.message, 'error');
+  }
+}
+
+function renderHistorialAdmin() {
+  const body = document.getElementById('adminListBody');
+  if (!adminHistorialRows.length) {
+    body.innerHTML = '<p class="admin-msg">Sin registros todavía.</p>';
+    return;
+  }
+  body.innerHTML = `<div class="admin-list">` + adminHistorialRows.map(row => {
+    const accionLbl = ADMIN_ACCION_LABELS[row.accion] || row.accion;
+    const entidadLbl = ADMIN_ENTIDAD_LABELS[row.entidad] || row.entidad;
+    const detalle = historialDetalleTexto(row);
+    return `
+      <div class="admin-row admin-row-static">
+        <div class="admin-row-main">
+          <div class="admin-row-title">${escapeAdminHtml(accionLbl)} ${escapeAdminHtml(entidadLbl)}${row.entidad_id ? ` <span style="color:var(--muted)">(${escapeAdminHtml(row.entidad_id)})</span>` : ''}</div>
+          <div class="admin-row-sub">${escapeAdminHtml(row.admin_email || 'admin')} · ${fmtDateTimeAdmin(row.creado_en)}${detalle ? ' · ' + escapeAdminHtml(detalle) : ''}</div>
+        </div>
+      </div>
+    `;
+  }).join('') + `</div>`;
+}
+
+function loadMoreHistorialAdmin() {
+  loadHistorialAdmin(false);
 }

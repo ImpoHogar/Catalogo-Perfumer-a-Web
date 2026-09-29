@@ -1,5 +1,5 @@
 // ============================================================
-//  CARGA DE PRODUCTOS DESDE SUPABASE
+//  CARGA DE PRODUCTOS Y AJUSTES DESDE SUPABASE
 // ============================================================
 //  Trae todos los productos (y su stock) desde la tabla "productos"
 //  de Supabase, arma window.PRODUCTS y window.STOCK con la misma
@@ -8,6 +8,13 @@
 //  catalogo que los datos ya estan listos disparando el evento
 //  "productos:listos" en window. Si algo falla, dispara
 //  "productos:error" para que main.js muestre un aviso.
+//
+//  De paso trae la tabla "ajustes_catalogo" (lotes de baja rotacion y
+//  marcas del carrusel, editables desde el panel administrativo) y
+//  reemplaza los valores por defecto de js/config.js con los reales.
+//  Si esto ultimo falla, el catalogo sigue funcionando con los
+//  valores de respaldo que ya trae config.js -- nunca bloquea la
+//  carga de productos.
 // ============================================================
 
 const PRODUCTOS_PAGE_SIZE = 1000;
@@ -55,12 +62,49 @@ async function fetchAllProductos() {
   return rows;
 }
 
+// Trae la tabla ajustes_catalogo (lotes de baja rotacion + marcas del
+// carrusel) y reemplaza los valores por defecto de config.js con los
+// reales. Nunca lanza error hacia afuera: si algo falla, simplemente
+// deja los valores de respaldo de config.js tal cual estan.
+async function fetchAjustes() {
+  try {
+    const resp = await fetch(`${SUPABASE_URL}/rest/v1/ajustes_catalogo?select=clave,valor`, {
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+      }
+    });
+    if (!resp.ok) return;
+    const rows = await resp.json();
+    // Importante: LOW_ROTATION_START_DATE, LOW_ROTATION_BATCHES y
+    // MARCAS_CARRUSEL estan declaradas con "let" en config.js (no
+    // "var"), asi que NO son propiedades de window -- hay que
+    // reasignarlas por su nombre tal cual, sin "window.", para que
+    // las funciones de config.js (getActiveLowRotationBatch, etc.) y
+    // de main.js (renderBrandMarquee) vean el valor nuevo.
+    rows.forEach(row => {
+      if (row.clave === 'low_rotation' && row.valor) {
+        if (row.valor.start_date) LOW_ROTATION_START_DATE = row.valor.start_date;
+        if (Array.isArray(row.valor.batches)) LOW_ROTATION_BATCHES = row.valor.batches;
+      } else if (row.clave === 'marcas_carrusel' && Array.isArray(row.valor)) {
+        MARCAS_CARRUSEL = row.valor;
+      }
+    });
+  } catch (err) {
+    // Silencioso a proposito: el catalogo sigue con los valores de
+    // respaldo de config.js.
+  }
+}
+
 async function loadProductsFromSupabase() {
   try {
     if (typeof SUPABASE_URL === 'undefined' || !SUPABASE_URL) {
       throw new Error('SUPABASE_URL no esta definido (revisa js/config.js)');
     }
-    const rows = await fetchAllProductos();
+    const [rows] = await Promise.all([
+      fetchAllProductos(),
+      fetchAjustes()
+    ]);
     if (!rows.length) {
       throw new Error('Supabase devolvio 0 productos');
     }
