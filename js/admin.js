@@ -416,6 +416,10 @@ function productEditFormHtml(p) {
         <input type="checkbox" id="pf_hidden" ${p.hidden ? 'checked' : ''}>
         <label for="pf_hidden">Ocultar del catálogo público</label>
       </div>
+      <div class="admin-checkbox-row">
+        <input type="checkbox" id="pf_nuevo" data-original-date="${escapeAdminHtml(p.date_added || '')}" ${p.date_added ? 'checked' : ''}>
+        <label for="pf_nuevo">Marcar como Nuevo Ingreso (aparece en la vitrina "Nuevos Ingresos")</label>
+      </div>
       <div class="admin-edit-actions">
         <button type="button" class="btn btn-danger" onclick="deleteAdminProducto(${p.id})">Enviar a la papelera</button>
         <div style="display:flex; gap:10px;">
@@ -440,6 +444,13 @@ async function saveAdminProducto(id) {
     hidden: document.getElementById('pf_hidden').checked,
     updated_at: new Date().toISOString()
   };
+  const nuevoCheckbox = document.getElementById('pf_nuevo');
+  // Si ya tenia fecha, se conserva (no se reinicia a hoy cada vez que
+  // se guarda el producto por otro motivo); si se acaba de marcar
+  // ahora, se pone la fecha de hoy. Si se desmarca, se quita del todo.
+  payload.date_added = nuevoCheckbox.checked
+    ? (nuevoCheckbox.dataset.originalDate || new Date().toISOString().slice(0, 10))
+    : null;
   if (!payload.brand || !payload.name || !payload.code) {
     adminSetMsg('Marca, nombre y código son obligatorios.', 'error');
     return;
@@ -527,6 +538,7 @@ function openAdminNewProduct() {
         <div class="field-full"><label class="field-label">Notas olfativas (separadas por coma)</label><input class="field-input" id="pfn_notes"></div>
       </div>
       <div class="admin-checkbox-row"><input type="checkbox" id="pfn_img"><label for="pfn_img">Ya tengo la foto subida</label></div>
+      <div class="admin-checkbox-row"><input type="checkbox" id="pfn_nuevo" checked><label for="pfn_nuevo">Marcar como Nuevo Ingreso</label></div>
       <div class="admin-edit-actions">
         <span></span>
         <div style="display:flex; gap:10px;">
@@ -560,7 +572,7 @@ async function saveAdminNewProduct() {
       notes: document.getElementById('pfn_notes').value.split(',').map(s => s.trim()).filter(Boolean),
       img: document.getElementById('pfn_img').checked,
       hidden: false,
-      date_added: new Date().toISOString().slice(0, 10)
+      date_added: document.getElementById('pfn_nuevo').checked ? new Date().toISOString().slice(0, 10) : null
     };
     const resp = await adminFetch('productos', {
       method: 'POST',
