@@ -110,6 +110,7 @@ async function submitAdminLogin() {
       expires_at: Date.now() + ((data.expires_in || 3600) * 1000) - 30000,
       email
     });
+    await fetchAndStoreAdminRol();
     closeAdminLogin();
     openAdminPanel();
   } catch (err) {
@@ -148,6 +149,37 @@ async function adminFetch(path, options = {}) {
   return resp;
 }
 
+// ---------- Rol del administrador (admin_usuarios) ----------
+// Por defecto todos son "admin" (acceso completo). Solo se restringe
+// a alguien si tiene una fila con rol='pedidos' en admin_usuarios
+// (se agrega a mano desde Supabase, no desde este panel). Si la
+// tabla admin_usuarios no existe todavia o falla la consulta, se
+// asume "admin" -- nunca se bloquea a nadie por error de red.
+async function fetchAndStoreAdminRol() {
+  let rol = 'admin';
+  try {
+    const resp = await adminFetch(`admin_usuarios?select=rol&email=eq.${encodeURIComponent(adminSession.email)}`);
+    if (resp.ok) {
+      const rows = await resp.json();
+      rol = (rows[0] && rows[0].rol) || 'admin';
+    }
+  } catch (err) {}
+  adminSession.rol = rol;
+  saveAdminSession(adminSession);
+}
+
+function applyAdminRoleUI() {
+  const rol = (adminSession && adminSession.rol) || 'admin';
+  const isLimited = rol === 'pedidos';
+  ['adminTabProductos', 'adminTabClientes', 'adminTabAjustes', 'adminTabHistorial'].forEach(id => {
+    document.getElementById(id).style.display = isLimited ? 'none' : '';
+  });
+  const userEl = document.getElementById('adminSidebarUser');
+  if (userEl) {
+    userEl.innerHTML = `${escapeAdminHtml((adminSession && adminSession.email) || '')}<span class="admin-role-badge">${isLimited ? 'Pedidos' : 'Admin'}</span>`;
+  }
+}
+
 // ---------- Historial de cambios (auditoria_admin) ----------
 // Se llama despues de cada accion que modifica algo (crear/editar/
 // eliminar producto o cliente, vincular pedido, guardar ajustes).
@@ -171,10 +203,19 @@ async function logAdminAction(accion, entidad, entidadId, detalle) {
 }
 
 // ---------- Panel principal ----------
+let adminShowPapelera = false;
+
+const ADMIN_TAB_TITLES = {
+  productos: 'Productos', clientes: 'Clientes', pedidos: 'Pedidos',
+  ranking: 'Ranking de más pedidos', ajustes: 'Ajustes', historial: 'Historial de cambios'
+};
+
 function openAdminPanel() {
   adminEditingId = null;
   document.getElementById('adminPanelModal').classList.add('open');
-  switchAdminTab('productos');
+  applyAdminRoleUI();
+  const rol = (adminSession && adminSession.rol) || 'admin';
+  switchAdminTab(rol === 'pedidos' ? 'pedidos' : 'productos');
 }
 
 function closeAdminPanel() {
@@ -184,14 +225,20 @@ function closeAdminPanel() {
 function switchAdminTab(tab) {
   adminTab = tab;
   adminEditingId = null;
+  adminShowPapelera = false;
   document.getElementById('adminTabProductos').classList.toggle('active', tab === 'productos');
   document.getElementById('adminTabClientes').classList.toggle('active', tab === 'clientes');
   document.getElementById('adminTabPedidos').classList.toggle('active', tab === 'pedidos');
+  document.getElementById('adminTabRanking').classList.toggle('active', tab === 'ranking');
   document.getElementById('adminTabAjustes').classList.toggle('active', tab === 'ajustes');
   document.getElementById('adminTabHistorial').classList.toggle('active', tab === 'historial');
+  document.getElementById('adminPanelTitle').textContent = ADMIN_TAB_TITLES[tab] || 'Panel administrativo';
   document.getElementById('adminSearchInput').value = '';
-  document.getElementById('adminSearchInput').style.display = tab === 'ajustes' ? 'none' : '';
-  document.getElementById('adminAddBtn').style.display = (tab === 'pedidos' || tab === 'ajustes' || tab === 'historial') ? 'none' : '';
+  document.getElementById('adminSearchInput').style.display = (tab === 'ajustes' || tab === 'ranking') ? 'none' : '';
+  document.getElementById('adminAddBtn').style.display = (tab === 'productos' || tab === 'clientes') ? '' : 'none';
+  const papeleraBtn = document.getElementById('adminPapeleraBtn');
+  papeleraBtn.style.display = (tab === 'productos' || tab === 'clientes') ? '' : 'none';
+  papeleraBtn.textContent = 'Ver papelera';
   document.getElementById('adminPedidosFilters').style.display = tab === 'pedidos' ? 'flex' : 'none';
   document.getElementById('adminPedidosSummary').style.display = tab === 'pedidos' ? 'grid' : 'none';
   document.getElementById('adminPedidosLoadMoreWrap').style.display = 'none';
@@ -204,8 +251,21 @@ function switchAdminTab(tab) {
   if (tab === 'productos') loadProductosAdmin('');
   else if (tab === 'clientes') loadClientesAdmin('');
   else if (tab === 'pedidos') loadPedidosAdmin(true);
+  else if (tab === 'ranking') loadRankingAdmin();
   else if (tab === 'ajustes') loadAjustesAdmin();
   else loadHistorialAdmin(true);
+}
+
+// Alterna entre ver los productos/clientes activos y ver la papelera
+// (los que se "eliminaron" -- en realidad solo se marcan con
+// eliminado_en y se pueden restaurar). Solo aplica a Productos/Clientes.
+function toggleAdminPapelera() {
+  adminShowPapelera = !adminShowPapelera;
+  document.getElementById('adminPapeleraBtn').textContent = adminShowPapelera ? 'Ver activos' : 'Ver papelera';
+  document.getElementById('adminAddBtn').style.display = adminShowPapelera ? 'none' : '';
+  document.getElementById('adminSearchInput').value = '';
+  if (adminTab === 'productos') loadProductosAdmin('');
+  else if (adminTab === 'clientes') loadClientesAdmin('');
 }
 
 function adminSetMsg(text, kind) {
@@ -234,16 +294,20 @@ async function loadProductosAdmin(term) {
   adminSetMsg('Cargando...');
   document.getElementById('adminListBody').innerHTML = '';
   try {
-    let url = 'productos?select=id,code,brand,name,tipo,genero,img,hidden,stock&order=id.desc&limit=60';
+    const cols = 'id,code,brand,name,tipo,genero,img,hidden,stock,eliminado_en';
+    const trash = adminShowPapelera ? '&eliminado_en=not.is.null' : '&eliminado_en=is.null';
+    let url = `productos?select=${cols}&order=id.desc&limit=60${trash}`;
     if (term) {
       const t = term.replace(/[,()]/g, '');
-      url = `productos?select=id,code,brand,name,tipo,genero,img,hidden,stock&or=(code.ilike.*${t}*,name.ilike.*${t}*,brand.ilike.*${t}*)&order=id.asc&limit=60`;
+      url = `productos?select=${cols}&or=(code.ilike.*${t}*,name.ilike.*${t}*,brand.ilike.*${t}*)&order=id.asc&limit=60${trash}`;
     }
     const resp = await adminFetch(url);
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
     const rows = await resp.json();
     renderProductosAdmin(rows);
-    adminSetMsg(term ? `${rows.length} resultado(s)` : `Últimos ${rows.length} productos agregados (busca para ver otros)`);
+    adminSetMsg(adminShowPapelera
+      ? `${rows.length} producto(s) en la papelera`
+      : (term ? `${rows.length} resultado(s)` : `Últimos ${rows.length} productos agregados (busca para ver otros)`));
   } catch (err) {
     adminSetMsg('Error al cargar productos: ' + err.message, 'error');
   }
@@ -252,7 +316,22 @@ async function loadProductosAdmin(term) {
 function renderProductosAdmin(rows) {
   const body = document.getElementById('adminListBody');
   if (!rows.length) {
-    body.innerHTML = '<p class="admin-msg">Sin resultados.</p>';
+    body.innerHTML = `<p class="admin-msg">${adminShowPapelera ? 'La papelera está vacía.' : 'Sin resultados.'}</p>`;
+    return;
+  }
+  if (adminShowPapelera) {
+    body.innerHTML = `<div class="admin-list">` + rows.map(p => `
+      <div class="admin-row admin-row-static admin-row-trash">
+        <div class="admin-row-main">
+          <div class="admin-row-title">${escapeAdminHtml(p.brand)} — ${escapeAdminHtml(p.name)}</div>
+          <div class="admin-row-sub">Código ${escapeAdminHtml(p.code)} · eliminado el ${fmtDateTimeAdmin(p.eliminado_en)}</div>
+        </div>
+        <div class="admin-row-actions">
+          <button type="button" class="btn btn-ghost" onclick="restoreAdminProducto(${p.id})">Restaurar</button>
+          <button type="button" class="btn btn-danger" onclick="permanentDeleteAdminProducto(${p.id})">Eliminar definitivo</button>
+        </div>
+      </div>
+    `).join('') + `</div>`;
     return;
   }
   body.innerHTML = rows.map(p => `
@@ -338,7 +417,7 @@ function productEditFormHtml(p) {
         <label for="pf_hidden">Ocultar del catálogo público</label>
       </div>
       <div class="admin-edit-actions">
-        <button type="button" class="btn btn-danger" onclick="deleteAdminProducto(${p.id})">Eliminar producto</button>
+        <button type="button" class="btn btn-danger" onclick="deleteAdminProducto(${p.id})">Enviar a la papelera</button>
         <div style="display:flex; gap:10px;">
           <button type="button" class="btn btn-ghost" onclick="toggleAdminProductEdit(${p.id})">Cancelar</button>
           <button type="button" class="btn btn-primary" onclick="saveAdminProducto(${p.id})">Guardar cambios</button>
@@ -384,14 +463,48 @@ async function saveAdminProducto(id) {
 }
 
 async function deleteAdminProducto(id) {
-  if (!confirm('¿Eliminar este producto definitivamente? Esta acción no se puede deshacer.')) return;
+  if (!confirm('¿Enviar este producto a la papelera? Desaparece del catálogo público de inmediato, pero puedes restaurarlo luego desde "Ver papelera".')) return;
+  try {
+    const resp = await adminFetch(`productos?id=eq.${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ eliminado_en: new Date().toISOString() })
+    });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    applyProductChangeToLiveCatalog({ id }, true);
+    logAdminAction('papelera', 'producto', id, null);
+    adminSetMsg('Producto enviado a la papelera.', 'ok');
+    loadProductosAdmin(document.getElementById('adminSearchInput').value.trim());
+  } catch (err) {
+    adminSetMsg('Error al eliminar: ' + err.message, 'error');
+  }
+}
+
+async function restoreAdminProducto(id) {
+  try {
+    const resp = await adminFetch(`productos?id=eq.${id}`, {
+      method: 'PATCH',
+      headers: { Prefer: 'return=representation' },
+      body: JSON.stringify({ eliminado_en: null })
+    });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const rows = await resp.json();
+    if (rows[0]) applyProductChangeToLiveCatalog(rows[0]);
+    logAdminAction('restaurar', 'producto', id, null);
+    adminSetMsg('Producto restaurado.', 'ok');
+    loadProductosAdmin('');
+  } catch (err) {
+    adminSetMsg('Error al restaurar: ' + err.message, 'error');
+  }
+}
+
+async function permanentDeleteAdminProducto(id) {
+  if (!confirm('¿Eliminar este producto DEFINITIVAMENTE de la base de datos? Esta acción no se puede deshacer.')) return;
   try {
     const resp = await adminFetch(`productos?id=eq.${id}`, { method: 'DELETE' });
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
-    applyProductChangeToLiveCatalog({ id }, true);
-    logAdminAction('eliminar', 'producto', id, null);
-    adminSetMsg('Producto eliminado.', 'ok');
-    loadProductosAdmin(document.getElementById('adminSearchInput').value.trim());
+    logAdminAction('eliminar_definitivo', 'producto', id, null);
+    adminSetMsg('Producto eliminado definitivamente.', 'ok');
+    loadProductosAdmin('');
   } catch (err) {
     adminSetMsg('Error al eliminar: ' + err.message, 'error');
   }
@@ -495,16 +608,18 @@ async function loadClientesAdmin(term) {
   adminSetMsg('Cargando...');
   document.getElementById('adminListBody').innerHTML = '';
   try {
-    let url = 'clientes?select=codigo,nombre,tel1,tel2,tel3&order=nombre.asc&limit=60';
+    const cols = 'codigo,nombre,tel1,tel2,tel3,eliminado_en';
+    const trash = adminShowPapelera ? '&eliminado_en=not.is.null' : '&eliminado_en=is.null';
+    let url = `clientes?select=${cols}&order=nombre.asc&limit=60${trash}`;
     if (term) {
       const t = term.replace(/[,()]/g, '');
-      url = `clientes?select=codigo,nombre,tel1,tel2,tel3&or=(codigo.ilike.*${t}*,nombre.ilike.*${t}*,tel1.ilike.*${t}*,tel2.ilike.*${t}*,tel3.ilike.*${t}*)&order=nombre.asc&limit=60`;
+      url = `clientes?select=${cols}&or=(codigo.ilike.*${t}*,nombre.ilike.*${t}*,tel1.ilike.*${t}*,tel2.ilike.*${t}*,tel3.ilike.*${t}*)&order=nombre.asc&limit=60${trash}`;
     }
     const resp = await adminFetch(url);
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
     const rows = await resp.json();
     renderClientesAdmin(rows);
-    adminSetMsg(`${rows.length} resultado(s)`);
+    adminSetMsg(adminShowPapelera ? `${rows.length} cliente(s) en la papelera` : `${rows.length} resultado(s)`);
   } catch (err) {
     adminSetMsg('Error al cargar clientes: ' + err.message, 'error');
   }
@@ -513,7 +628,22 @@ async function loadClientesAdmin(term) {
 function renderClientesAdmin(rows) {
   const body = document.getElementById('adminListBody');
   if (!rows.length) {
-    body.innerHTML = '<p class="admin-msg">Sin resultados.</p>';
+    body.innerHTML = `<p class="admin-msg">${adminShowPapelera ? 'La papelera está vacía.' : 'Sin resultados.'}</p>`;
+    return;
+  }
+  if (adminShowPapelera) {
+    body.innerHTML = `<div class="admin-list">` + rows.map(c => `
+      <div class="admin-row admin-row-static admin-row-trash">
+        <div class="admin-row-main">
+          <div class="admin-row-title">${escapeAdminHtml(c.nombre)}</div>
+          <div class="admin-row-sub">Código ${escapeAdminHtml(c.codigo)} · eliminado el ${fmtDateTimeAdmin(c.eliminado_en)}</div>
+        </div>
+        <div class="admin-row-actions">
+          <button type="button" class="btn btn-ghost" onclick="restoreAdminCliente('${escapeAdminHtml(c.codigo)}')">Restaurar</button>
+          <button type="button" class="btn btn-danger" onclick="permanentDeleteAdminCliente('${escapeAdminHtml(c.codigo)}')">Eliminar definitivo</button>
+        </div>
+      </div>
+    `).join('') + `</div>`;
     return;
   }
   body.innerHTML = rows.map(c => `
@@ -573,7 +703,7 @@ function clientEditFormHtml(c) {
         <div><label class="field-label">Teléfono 3</label><input class="field-input" id="cf_tel3" value="${escapeAdminHtml(c.tel3 || '')}"></div>
       </div>
       <div class="admin-edit-actions">
-        <button type="button" class="btn btn-danger" onclick="deleteAdminCliente('${escapeAdminHtml(c.codigo)}')">Eliminar cliente</button>
+        <button type="button" class="btn btn-danger" onclick="deleteAdminCliente('${escapeAdminHtml(c.codigo)}')">Enviar a la papelera</button>
         <div style="display:flex; gap:10px;">
           <button type="button" class="btn btn-ghost" onclick="toggleAdminClientEdit('${escapeAdminHtml(c.codigo)}')">Cancelar</button>
           <button type="button" class="btn btn-primary" onclick="saveAdminCliente('${escapeAdminHtml(c.codigo)}')">Guardar cambios</button>
@@ -610,13 +740,44 @@ async function saveAdminCliente(codigo) {
 }
 
 async function deleteAdminCliente(codigo) {
-  if (!confirm('¿Eliminar este cliente definitivamente? Esta acción no se puede deshacer.')) return;
+  if (!confirm('¿Enviar este cliente a la papelera? Puedes restaurarlo luego desde "Ver papelera".')) return;
+  try {
+    const resp = await adminFetch(`clientes?codigo=eq.${encodeURIComponent(codigo)}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ eliminado_en: new Date().toISOString() })
+    });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    logAdminAction('papelera', 'cliente', codigo, null);
+    adminSetMsg('Cliente enviado a la papelera.', 'ok');
+    loadClientesAdmin(document.getElementById('adminSearchInput').value.trim());
+  } catch (err) {
+    adminSetMsg('Error al eliminar: ' + err.message, 'error');
+  }
+}
+
+async function restoreAdminCliente(codigo) {
+  try {
+    const resp = await adminFetch(`clientes?codigo=eq.${encodeURIComponent(codigo)}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ eliminado_en: null })
+    });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    logAdminAction('restaurar', 'cliente', codigo, null);
+    adminSetMsg('Cliente restaurado.', 'ok');
+    loadClientesAdmin('');
+  } catch (err) {
+    adminSetMsg('Error al restaurar: ' + err.message, 'error');
+  }
+}
+
+async function permanentDeleteAdminCliente(codigo) {
+  if (!confirm('¿Eliminar este cliente DEFINITIVAMENTE de la base de datos? Esta acción no se puede deshacer.')) return;
   try {
     const resp = await adminFetch(`clientes?codigo=eq.${encodeURIComponent(codigo)}`, { method: 'DELETE' });
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
-    logAdminAction('eliminar', 'cliente', codigo, null);
-    adminSetMsg('Cliente eliminado.', 'ok');
-    loadClientesAdmin(document.getElementById('adminSearchInput').value.trim());
+    logAdminAction('eliminar_definitivo', 'cliente', codigo, null);
+    adminSetMsg('Cliente eliminado definitivamente.', 'ok');
+    loadClientesAdmin('');
   } catch (err) {
     adminSetMsg('Error al eliminar: ' + err.message, 'error');
   }
@@ -704,7 +865,7 @@ function fmtDateAdmin(iso) {
 
 async function loadAllClientesForMatching() {
   try {
-    const resp = await adminFetch('clientes?select=codigo,nombre,tel1,tel2,tel3', {
+    const resp = await adminFetch('clientes?select=codigo,nombre,tel1,tel2,tel3&eliminado_en=is.null', {
       headers: { Range: '0-999' }
     });
     if (!resp.ok && resp.status !== 206) throw new Error('HTTP ' + resp.status);
@@ -954,6 +1115,122 @@ async function exportAdminPedidosExcel() {
 }
 
 // ============================================================
+//  RANKING DE MAS PEDIDOS
+// ============================================================
+//  Suma las cantidades pedidas por producto y por marca a partir de
+//  los pedidos guardados (columna items de la tabla pedidos), para
+//  ayudar a decidir que reponer primero. Se puede filtrar por fecha.
+//  Se calcula en el navegador sobre hasta 2000 pedidos mas recientes
+//  del rango elegido (de sobra para el volumen actual).
+// ============================================================
+
+let adminRankingLoading = false;
+
+function loadRankingAdmin() {
+  const body = document.getElementById('adminListBody');
+  body.innerHTML = `
+    <div class="admin-toolbar" style="margin-bottom:18px;">
+      <div>
+        <label class="field-label" for="adminRankingFrom">Desde</label>
+        <input id="adminRankingFrom" class="field-input" type="date" style="height:40px; flex:0 0 160px; min-width:160px;">
+      </div>
+      <div>
+        <label class="field-label" for="adminRankingTo">Hasta</label>
+        <input id="adminRankingTo" class="field-input" type="date" style="height:40px; flex:0 0 160px; min-width:160px;">
+      </div>
+      <button type="button" class="btn btn-primary" style="margin-top:18px;" onclick="calcularRankingAdmin()">Calcular</button>
+    </div>
+    <div id="adminRankingResult"></div>
+  `;
+  calcularRankingAdmin();
+}
+
+async function calcularRankingAdmin() {
+  if (adminRankingLoading) return;
+  adminRankingLoading = true;
+  adminSetMsg('Calculando...');
+  const resultEl = document.getElementById('adminRankingResult');
+  if (resultEl) resultEl.innerHTML = '';
+  try {
+    const from = document.getElementById('adminRankingFrom').value;
+    const to = document.getElementById('adminRankingTo').value;
+    let url = 'pedidos?select=items,creado_en&order=creado_en.desc';
+    if (from) url += `&creado_en=gte.${from}T00:00:00`;
+    if (to) url += `&creado_en=lte.${to}T23:59:59`;
+    const resp = await adminFetch(url, { headers: { Range: '0-1999' } });
+    if (!resp.ok && resp.status !== 206) throw new Error('HTTP ' + resp.status);
+    const rows = await resp.json();
+    const porProducto = new Map(); // code -> { code, name, brand, qty, pedidos }
+    const porMarca = new Map();    // brand -> qty
+    rows.forEach(p => {
+      const items = Array.isArray(p.items) ? p.items : [];
+      items.forEach(it => {
+        const code = it.code || it.name || '?';
+        const qty = parseInt(it.qty) || 0;
+        if (!porProducto.has(code)) {
+          porProducto.set(code, { code: it.code || '', name: it.name || code, brand: it.brand || '', qty: 0, pedidos: 0 });
+        }
+        const entry = porProducto.get(code);
+        entry.qty += qty;
+        entry.pedidos += 1;
+        if (it.brand) porMarca.set(it.brand, (porMarca.get(it.brand) || 0) + qty);
+      });
+    });
+    const topProductos = Array.from(porProducto.values()).sort((a, b) => b.qty - a.qty).slice(0, 25);
+    const topMarcas = Array.from(porMarca.entries()).sort((a, b) => b[1] - a[1]).slice(0, 15);
+    renderRankingAdmin(rows.length, topProductos, topMarcas);
+    adminSetMsg(`Calculado sobre ${rows.length} pedido(s).`);
+  } catch (err) {
+    adminSetMsg('Error al calcular el ranking: ' + err.message, 'error');
+  } finally {
+    adminRankingLoading = false;
+  }
+}
+
+function renderRankingAdmin(totalPedidos, topProductos, topMarcas) {
+  const resultEl = document.getElementById('adminRankingResult');
+  if (!resultEl) return;
+  if (!totalPedidos) {
+    resultEl.innerHTML = '<p class="admin-msg">No hay pedidos en ese rango.</p>';
+    return;
+  }
+  const maxProdQty = topProductos.length ? topProductos[0].qty : 1;
+  const maxMarcaQty = topMarcas.length ? topMarcas[0][1] : 1;
+  resultEl.innerHTML = `
+    <div class="admin-ajustes-card">
+      <h3 class="admin-ajustes-title">Productos más pedidos</h3>
+      <table class="admin-ranking-table">
+        <thead><tr><th>Producto</th><th>Código</th><th>Pedidos</th><th>Unidades</th></tr></thead>
+        <tbody>
+          ${topProductos.map(p => `
+            <tr>
+              <td>${escapeAdminHtml(p.brand)}${p.brand ? ' — ' : ''}${escapeAdminHtml(p.name)}<div class="admin-ranking-bar"><div class="admin-ranking-bar-fill" style="width:${Math.round(p.qty / maxProdQty * 100)}%"></div></div></td>
+              <td>${escapeAdminHtml(p.code)}</td>
+              <td class="num">${p.pedidos}</td>
+              <td class="num">${p.qty}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+    <div class="admin-ajustes-card">
+      <h3 class="admin-ajustes-title">Marcas más pedidas</h3>
+      <table class="admin-ranking-table">
+        <thead><tr><th>Marca</th><th>Unidades</th></tr></thead>
+        <tbody>
+          ${topMarcas.map(([brand, qty]) => `
+            <tr>
+              <td>${escapeAdminHtml(brand)}<div class="admin-ranking-bar"><div class="admin-ranking-bar-fill" style="width:${Math.round(qty / maxMarcaQty * 100)}%"></div></div></td>
+              <td class="num">${qty}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+// ============================================================
 //  AJUSTES (lotes de baja rotación / nuevos ingresos + marcas carrusel)
 // ============================================================
 //  Ambos viven en la tabla ajustes_catalogo (una fila con clave
@@ -967,6 +1244,7 @@ async function exportAdminPedidosExcel() {
 
 let adminAjustesLowRotation = null; // { start_date, batches: [[codigo,...], ...] }
 let adminAjustesMarcas = null;      // [{ nombre, archivo }, ...]
+let adminAjustesVendedores = null;  // [{ name, phone }, ...]
 
 async function loadAjustesAdmin() {
   adminSetMsg('Cargando...');
@@ -977,9 +1255,13 @@ async function loadAjustesAdmin() {
     const rows = await resp.json();
     const lr = rows.find(r => r.clave === 'low_rotation');
     const mc = rows.find(r => r.clave === 'marcas_carrusel');
+    const vd = rows.find(r => r.clave === 'vendedores');
     adminAjustesLowRotation = (lr && lr.valor) ? lr.valor : { start_date: '', batches: [] };
     if (!Array.isArray(adminAjustesLowRotation.batches)) adminAjustesLowRotation.batches = [];
     adminAjustesMarcas = (mc && Array.isArray(mc.valor)) ? mc.valor : [];
+    adminAjustesVendedores = (vd && vd.valor && typeof vd.valor === 'object')
+      ? Object.keys(vd.valor).map(k => ({ name: vd.valor[k].name || '', phone: vd.valor[k].phone || '' }))
+      : [];
     renderAjustesAdmin();
     adminSetMsg('');
   } catch (err) {
@@ -1002,6 +1284,13 @@ function renderAjustesAdmin() {
       <input class="field-input" data-marca-nombre value="${escapeAdminHtml(m.nombre || '')}" placeholder="Nombre de la marca">
       <input class="field-input" data-marca-archivo value="${escapeAdminHtml(m.archivo || '')}" placeholder="Archivo, ej: afnan.png">
       <button type="button" class="btn btn-ghost" onclick="removeAjusteMarcaRow(${i})" title="Eliminar marca">✕</button>
+    </div>
+  `).join('');
+  const vendedoresHtml = adminAjustesVendedores.map((v, i) => `
+    <div class="admin-marca-row" data-vendedor-idx="${i}">
+      <input class="field-input" data-vendedor-nombre value="${escapeAdminHtml(v.name || '')}" placeholder="Nombre del vendedor">
+      <input class="field-input" data-vendedor-tel value="${escapeAdminHtml(v.phone || '')}" placeholder="WhatsApp, ej: 50687203737">
+      <button type="button" class="btn btn-ghost" onclick="removeAjusteVendedorRow(${i})" title="Eliminar vendedor">✕</button>
     </div>
   `).join('');
   body.innerHTML = `
@@ -1027,6 +1316,15 @@ function renderAjustesAdmin() {
       <div class="admin-edit-actions">
         <button type="button" class="btn btn-ghost" onclick="addAjusteMarcaRow()">+ Agregar marca</button>
         <button type="button" class="btn btn-primary" onclick="saveAjustesMarcas()">Guardar marcas</button>
+      </div>
+    </div>
+    <div class="admin-ajustes-card">
+      <h3 class="admin-ajustes-title">Vendedores (WhatsApp)</h3>
+      <p class="admin-msg">Son las opciones que ve el cliente al elegir a quién enviarle su pedido por WhatsApp, al terminar de generarlo. El teléfono debe llevar código de país sin espacios ni signos (ej: 50687203737).</p>
+      <div id="ajVendedoresWrap">${vendedoresHtml || '<p class="admin-msg">Sin vendedores todavía.</p>'}</div>
+      <div class="admin-edit-actions">
+        <button type="button" class="btn btn-ghost" onclick="addAjusteVendedorRow()">+ Agregar vendedor</button>
+        <button type="button" class="btn btn-primary" onclick="saveAjustesVendedores()">Guardar vendedores</button>
       </div>
     </div>
   `;
@@ -1073,6 +1371,42 @@ function removeAjusteMarcaRow(i) {
   marcas.splice(i, 1);
   adminAjustesMarcas = marcas;
   renderAjustesAdmin();
+}
+
+function readAjustesVendedoresFromDom() {
+  const rows = document.querySelectorAll('#ajVendedoresWrap [data-vendedor-idx]');
+  return Array.from(rows)
+    .map(row => ({
+      name: row.querySelector('[data-vendedor-nombre]').value.trim(),
+      phone: row.querySelector('[data-vendedor-tel]').value.replace(/\D/g, '')
+    }))
+    .filter(v => v.name && v.phone);
+}
+
+function addAjusteVendedorRow() {
+  adminAjustesVendedores = readAjustesVendedoresFromDom();
+  adminAjustesVendedores.push({ name: '', phone: '' });
+  renderAjustesAdmin();
+}
+
+function removeAjusteVendedorRow(i) {
+  const vs = readAjustesVendedoresFromDom();
+  vs.splice(i, 1);
+  adminAjustesVendedores = vs;
+  renderAjustesAdmin();
+}
+
+// Genera una llave corta y unica (sin tildes ni espacios) a partir
+// del nombre del vendedor, para usar como clave del objeto SELLERS
+// (ej. "Roy Chacón" -> "roy-chacon"). Si dos vendedores comparten
+// nombre, se numeran (roy-chacon-2).
+function sellerKeyFromName(name, usedKeys) {
+  const base = name.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'vendedor';
+  let key = base, n = 2;
+  while (usedKeys.has(key)) { key = `${base}-${n}`; n++; }
+  usedKeys.add(key);
+  return key;
 }
 
 async function upsertAjusteRow(clave, valor) {
@@ -1133,6 +1467,30 @@ async function saveAjustesMarcas() {
   }
 }
 
+async function saveAjustesVendedores() {
+  const vendedores = readAjustesVendedoresFromDom();
+  if (!vendedores.length) {
+    adminSetMsg('Agrega al menos un vendedor.', 'error');
+    return;
+  }
+  const usedKeys = new Set();
+  const valor = {};
+  vendedores.forEach(v => {
+    valor[sellerKeyFromName(v.name, usedKeys)] = { name: v.name, phone: v.phone };
+  });
+  try {
+    await upsertAjusteRow('vendedores', valor);
+    adminAjustesVendedores = vendedores;
+    SELLERS = valor;
+    if (typeof renderSellerModal === 'function') renderSellerModal();
+    logAdminAction('editar', 'vendedores', null, { total: vendedores.length });
+    adminSetMsg('Vendedores guardados y aplicados al catálogo.', 'ok');
+    renderAjustesAdmin();
+  } catch (err) {
+    adminSetMsg('Error al guardar: ' + err.message, 'error');
+  }
+}
+
 // ============================================================
 //  HISTORIAL DE CAMBIOS (auditoria_admin)
 // ============================================================
@@ -1147,10 +1505,14 @@ function fmtDateTimeAdmin(iso) {
   return d.toLocaleString('es-CR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 
-const ADMIN_ACCION_LABELS = { crear: 'Creó', editar: 'Editó', eliminar: 'Eliminó', vincular: 'Vinculó' };
+const ADMIN_ACCION_LABELS = {
+  crear: 'Creó', editar: 'Editó', eliminar: 'Eliminó', vincular: 'Vinculó',
+  papelera: 'Envió a la papelera', restaurar: 'Restauró', eliminar_definitivo: 'Eliminó definitivamente'
+};
 const ADMIN_ENTIDAD_LABELS = {
   producto: 'un producto', cliente: 'un cliente', pedido: 'un pedido',
-  low_rotation: 'la rotación de baja rotación', marcas_carrusel: 'las marcas del carrusel'
+  low_rotation: 'la rotación de baja rotación', marcas_carrusel: 'las marcas del carrusel',
+  vendedores: 'los vendedores'
 };
 
 function historialDetalleTexto(row) {

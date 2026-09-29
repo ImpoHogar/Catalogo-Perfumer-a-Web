@@ -88,6 +88,8 @@ async function fetchAjustes() {
         if (Array.isArray(row.valor.batches)) LOW_ROTATION_BATCHES = row.valor.batches;
       } else if (row.clave === 'marcas_carrusel' && Array.isArray(row.valor)) {
         MARCAS_CARRUSEL = row.valor;
+      } else if (row.clave === 'vendedores' && row.valor && typeof row.valor === 'object') {
+        SELLERS = row.valor;
       }
     });
   } catch (err) {
@@ -109,7 +111,14 @@ async function loadProductsFromSupabase() {
       throw new Error('Supabase devolvio 0 productos');
     }
 
-    window.PRODUCTS = rows.map(mapSupabaseRow);
+    // Se filtran aca (no en la consulta) los productos que esten en la
+    // papelera del panel administrativo (columna eliminado_en). Se
+    // hace del lado del cliente y no con un filtro en la URL a
+    // proposito: asi el catalogo sigue funcionando igual aunque esa
+    // columna todavia no exista (antes de correr el SQL de la
+    // papelera) -- "row.eliminado_en" simplemente no existe y el
+    // filtro no descarta nada.
+    window.PRODUCTS = rows.filter(row => !row.eliminado_en).map(mapSupabaseRow);
 
     window.STOCK = {};
     window.PRODUCTS.forEach(p => {

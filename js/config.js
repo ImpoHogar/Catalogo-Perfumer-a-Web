@@ -86,7 +86,12 @@ const VITRINA_MAX_POR_FILA = 40;
 // Con fotos publicadas en img/: habilita el ZIP de fotos del pedido.
 const HAS_PHOTOS = true;
 
-const SELLERS = {
+// Igual que MARCAS_CARRUSEL/LOW_ROTATION_*: esto tambien vive en la
+// tabla ajustes_catalogo de Supabase (clave "vendedores"), editable
+// desde el panel administrativo (pestaña Ajustes). Lo de aca abajo es
+// solo el respaldo si el catalogo no logra traer los ajustes. Es
+// "let" (no "const") para que products-loader.js pueda reemplazarlo.
+let SELLERS = {
   roy: { name: 'Roy Chacón', phone: '50687203737' },
   pedro: { name: 'Pedro Alemán', phone: '50672349212' }
 };

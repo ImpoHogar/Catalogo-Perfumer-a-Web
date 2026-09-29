@@ -238,6 +238,48 @@ function hideThankYouModal() {
   }
 }
 
+// Icono de WhatsApp reutilizado para cada vendedor del modal.
+const SELLER_WA_ICON_SVG = '<svg class="seller-wa" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.4A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.4-.7-1.6-.8-.2-.1-.4-.1-.6.1-.2.2-.6.8-.8.9-.1.2-.3.2-.5.1-.2-.1-1.1-.4-2-1.3-.7-.7-1.2-1.5-1.4-1.7-.1-.2 0-.4.1-.5l.4-.4c.1-.1.2-.3.2-.4.1-.1 0-.3 0-.4-.1-.1-.6-1.4-.8-1.9-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.4.1-.6.3-.2.2-.8.8-.8 2s.8 2.4 1 2.5c.1.2 1.8 2.8 4.4 3.9.6.3 1.1.4 1.5.5.6.2 1.2.2 1.6.1.5-.1 1.4-.6 1.6-1.1.2-.5.2-1 .1-1.1-.1-.1-.2-.2-.4-.3z"/></svg>';
+
+function sellerInitials(name) {
+  return (name || '').trim().split(/\s+/).slice(0, 2).map(w => w[0] || '').join('').toUpperCase();
+}
+
+function sellerFormattedPhone(phone) {
+  const digits = String(phone || '').replace(/\D/g, '');
+  const local = digits.length > 8 ? digits.slice(-8) : digits;
+  const cc = digits.length > 8 ? digits.slice(0, digits.length - 8) : '';
+  if (local.length === 8) {
+    return `${cc ? '(' + cc + ') ' : ''}${local.slice(0, 4)}-${local.slice(4)}`;
+  }
+  return phone;
+}
+
+// Arma el modal de "elige tu vendedor" a partir de SELLERS (definido
+// en config.js, y sobreescrito en tiempo real por products-loader.js
+// con lo que haya en Supabase). Se llama al cargar el catalogo y de
+// nuevo cada vez que el panel administrativo guarda cambios en la
+// lista de vendedores.
+function renderSellerModal() {
+  const list = document.getElementById('sellerList');
+  if (!list || typeof SELLERS === 'undefined') return;
+  const keys = Object.keys(SELLERS);
+  if (!keys.length) {
+    list.innerHTML = '<p style="font-size:13px; color:var(--muted);">No hay vendedores configurados.</p>';
+    return;
+  }
+  list.innerHTML = keys.map(key => {
+    const s = SELLERS[key];
+    return `
+      <button type="button" class="seller-option" onclick="sendToSeller('${key}')">
+        <span class="seller-avatar">${sellerInitials(s.name)}</span>
+        <span class="seller-text"><b>${s.name}</b><span>${sellerFormattedPhone(s.phone)}</span></span>
+        ${SELLER_WA_ICON_SVG}
+      </button>
+    `;
+  }).join('');
+}
+
 function openSellerModal() {
   document.getElementById('sellerModal').classList.add('open');
 }
