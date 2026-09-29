@@ -18,7 +18,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/styles.css?v=20260929a">
+<link rel="stylesheet" href="css/styles.css?v=20260929b">
 </head>
 <body>
 <noscript>
@@ -312,18 +312,7 @@
     <div class="thanks-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12 20 4l-4 16-4.5-6.5z"/><path d="M11.5 13.5 20 4"/></svg></div>
     <p class="thanks-text thanks-text-tight">Elige tu vendedor para enviarle tu pedido por WhatsApp</p>
     <p class="thanks-note">Se abrirá un chat de WhatsApp con el mensaje listo — solo adjunta ahí el Excel que se acaba de descargar en tu dispositivo.</p>
-    <div class="seller-list">
-      <button type="button" class="seller-option" onclick="sendToSeller('roy')">
-        <span class="seller-avatar">RC</span>
-        <span class="seller-text"><b>Roy Chacón</b><span>(506) 8720-3737</span></span>
-        <svg class="seller-wa" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.4A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.4-.7-1.6-.8-.2-.1-.4-.1-.6.1-.2.2-.6.8-.8.9-.1.2-.3.2-.5.1-.2-.1-1.1-.4-2-1.3-.7-.7-1.2-1.5-1.4-1.7-.1-.2 0-.4.1-.5l.4-.4c.1-.1.2-.3.2-.4.1-.1 0-.3 0-.4-.1-.1-.6-1.4-.8-1.9-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.4.1-.6.3-.2.2-.8.8-.8 2s.8 2.4 1 2.5c.1.2 1.8 2.8 4.4 3.9.6.3 1.1.4 1.5.5.6.2 1.2.2 1.6.1.5-.1 1.4-.6 1.6-1.1.2-.5.2-1 .1-1.1-.1-.1-.2-.2-.4-.3z"/></svg>
-      </button>
-      <button type="button" class="seller-option" onclick="sendToSeller('pedro')">
-        <span class="seller-avatar">PA</span>
-        <span class="seller-text"><b>Pedro Alemán</b><span>(506) 7234-9212</span></span>
-        <svg class="seller-wa" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.4A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.4-.7-1.6-.8-.2-.1-.4-.1-.6.1-.2.2-.6.8-.8.9-.1.2-.3.2-.5.1-.2-.1-1.1-.4-2-1.3-.7-.7-1.2-1.5-1.4-1.7-.1-.2 0-.4.1-.5l.4-.4c.1-.1.2-.3.2-.4.1-.1 0-.3 0-.4-.1-.1-.6-1.4-.8-1.9-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.4.1-.6.3-.2.2-.8.8-.8 2s.8 2.4 1 2.5c.1.2 1.8 2.8 4.4 3.9.6.3 1.1.4 1.5.5.6.2 1.2.2 1.6.1.5-.1 1.4-.6 1.6-1.1.2-.5.2-1 .1-1.1-.1-.1-.2-.2-.4-.3z"/></svg>
-      </button>
-    </div>
+    <div class="seller-list" id="sellerList"></div>
     <button class="thanks-btn thanks-btn-ghost" type="button" onclick="closeSellerModal()">Omitir</button>
   </div>
 </div>
@@ -381,49 +370,88 @@
   </div>
 </div>
 
-<div id="adminPanelModal" class="order-modal" onclick="if(event.target===this) closeAdminPanel()">
-  <div class="order-card order-card-admin" role="dialog" aria-modal="true" aria-labelledby="adminPanelTitle">
-    <div class="order-header">
-      <h3 id="adminPanelTitle">Panel administrativo</h3>
-      <button type="button" onclick="closeAdminPanel()" aria-label="Cerrar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
-    </div>
-    <div class="admin-tabs">
-      <button type="button" id="adminTabProductos" class="admin-tab" onclick="switchAdminTab('productos')">Productos</button>
-      <button type="button" id="adminTabClientes" class="admin-tab" onclick="switchAdminTab('clientes')">Clientes</button>
-      <button type="button" id="adminTabPedidos" class="admin-tab" onclick="switchAdminTab('pedidos')">Pedidos</button>
-      <button type="button" id="adminTabAjustes" class="admin-tab" onclick="switchAdminTab('ajustes')">Ajustes</button>
-      <button type="button" id="adminTabHistorial" class="admin-tab" onclick="switchAdminTab('historial')">Historial</button>
-    </div>
-    <div class="admin-body">
-      <div class="admin-toolbar">
-        <input id="adminSearchInput" class="field-input" type="search" placeholder="Buscar..." oninput="onAdminSearch()">
-        <button type="button" id="adminAddBtn" class="btn btn-primary" onclick="adminTab==='productos' ? openAdminNewProduct() : openAdminNewClient()">+ Agregar</button>
-        <button type="button" class="btn btn-ghost" onclick="adminLogout()">Cerrar sesión</button>
-      </div>
-      <div id="adminPedidosFilters" class="admin-toolbar" style="display:none;">
-        <div>
-          <label class="field-label" for="adminPedidosFrom">Desde</label>
-          <input id="adminPedidosFrom" class="field-input" type="date" style="height:40px; flex:0 0 160px; min-width:160px;">
+<div id="adminPanelModal" class="admin-modal">
+  <div class="admin-shell" role="dialog" aria-modal="true" aria-labelledby="adminPanelTitle">
+    <aside class="admin-sidebar">
+      <div class="admin-sidebar-top">
+        <div class="admin-sidebar-brand">
+          <span class="admin-brand-mark">IH</span>
+          <div class="admin-brand-text">
+            <b>ImpoHogar</b>
+            <span>Panel administrativo</span>
+          </div>
         </div>
-        <div>
-          <label class="field-label" for="adminPedidosTo">Hasta</label>
-          <input id="adminPedidosTo" class="field-input" type="date" style="height:40px; flex:0 0 160px; min-width:160px;">
+        <nav class="admin-nav">
+          <button type="button" id="adminTabProductos" class="admin-nav-item" onclick="switchAdminTab('productos')">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7l9-4 9 4-9 4-9-4Z"/><path d="M3 7v10l9 4 9-4V7"/><path d="M12 11v10"/></svg>
+            <span>Productos</span>
+          </button>
+          <button type="button" id="adminTabClientes" class="admin-nav-item" onclick="switchAdminTab('clientes')">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><circle cx="17.5" cy="8.5" r="2.4"/><path d="M15.7 14.2c2.8.4 4.8 2.4 4.8 5.3"/></svg>
+            <span>Clientes</span>
+          </button>
+          <button type="button" id="adminTabPedidos" class="admin-nav-item" onclick="switchAdminTab('pedidos')">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16l-1.5 10a2 2 0 0 1-2 1.7H7.5a2 2 0 0 1-2-1.7L4 6Z"/><path d="M8 6V5a4 4 0 0 1 8 0v1"/></svg>
+            <span>Pedidos</span>
+          </button>
+          <button type="button" id="adminTabRanking" class="admin-nav-item" onclick="switchAdminTab('ranking')">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10"/><path d="M12 20V4"/><path d="M20 20v-7"/></svg>
+            <span>Ranking</span>
+          </button>
+          <button type="button" id="adminTabAjustes" class="admin-nav-item" onclick="switchAdminTab('ajustes')">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 13a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V19a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H4a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H10a1.7 1.7 0 0 0 1-1.5V4a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V10a1.7 1.7 0 0 0 1.5 1H20a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg>
+            <span>Ajustes</span>
+          </button>
+          <button type="button" id="adminTabHistorial" class="admin-nav-item" onclick="switchAdminTab('historial')">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>
+            <span>Historial</span>
+          </button>
+        </nav>
+      </div>
+      <div class="admin-sidebar-bottom">
+        <div class="admin-sidebar-user" id="adminSidebarUser"></div>
+        <button type="button" class="admin-nav-item admin-nav-logout" onclick="adminLogout()">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>
+          <span>Cerrar sesión</span>
+        </button>
+      </div>
+    </aside>
+    <div class="admin-main">
+      <header class="admin-main-header">
+        <h3 id="adminPanelTitle">Productos</h3>
+        <button type="button" class="admin-close-btn" onclick="closeAdminPanel()" aria-label="Cerrar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+      </header>
+      <div class="admin-body">
+        <div class="admin-toolbar">
+          <input id="adminSearchInput" class="field-input" type="search" placeholder="Buscar..." oninput="onAdminSearch()">
+          <button type="button" id="adminPapeleraBtn" class="btn btn-ghost" style="display:none;" onclick="toggleAdminPapelera()">Ver papelera</button>
+          <button type="button" id="adminAddBtn" class="btn btn-primary" onclick="adminTab==='productos' ? openAdminNewProduct() : openAdminNewClient()">+ Agregar</button>
         </div>
-        <label style="display:flex; align-items:center; gap:6px; font-size:13px; margin-top:18px;">
-          <input type="checkbox" id="adminPedidosSoloSinVincular" onchange="onAdminPedidosFilterChange()">
-          Solo sin vincular
-        </label>
-        <button type="button" class="btn btn-ghost" style="margin-top:18px;" onclick="onAdminPedidosFilterChange()">Filtrar</button>
-        <button type="button" class="btn btn-ghost" style="margin-top:18px;" onclick="clearAdminPedidosFilters()">Limpiar</button>
-        <button type="button" class="btn btn-primary" style="margin-top:18px;" onclick="exportAdminPedidosExcel()">Exportar a Excel</button>
+        <div id="adminPedidosFilters" class="admin-toolbar" style="display:none;">
+          <div>
+            <label class="field-label" for="adminPedidosFrom">Desde</label>
+            <input id="adminPedidosFrom" class="field-input" type="date" style="height:40px; flex:0 0 160px; min-width:160px;">
+          </div>
+          <div>
+            <label class="field-label" for="adminPedidosTo">Hasta</label>
+            <input id="adminPedidosTo" class="field-input" type="date" style="height:40px; flex:0 0 160px; min-width:160px;">
+          </div>
+          <label style="display:flex; align-items:center; gap:6px; font-size:13px; margin-top:18px;">
+            <input type="checkbox" id="adminPedidosSoloSinVincular" onchange="onAdminPedidosFilterChange()">
+            Solo sin vincular
+          </label>
+          <button type="button" class="btn btn-ghost" style="margin-top:18px;" onclick="onAdminPedidosFilterChange()">Filtrar</button>
+          <button type="button" class="btn btn-ghost" style="margin-top:18px;" onclick="clearAdminPedidosFilters()">Limpiar</button>
+          <button type="button" class="btn btn-primary" style="margin-top:18px;" onclick="exportAdminPedidosExcel()">Exportar a Excel</button>
+        </div>
+        <div id="adminMsg" class="admin-msg"></div>
+        <div id="adminPedidosSummary" class="admin-summary" style="display:none;"></div>
+        <div id="adminListBody"></div>
+        <div id="adminPedidosLoadMoreWrap" style="display:none; text-align:center; margin-top:14px;">
+          <button type="button" class="btn btn-ghost" onclick="adminTab==='historial' ? loadMoreHistorialAdmin() : loadPedidosAdmin(false)">Cargar más</button>
+        </div>
+        <datalist id="adminClientesDatalist"></datalist>
       </div>
-      <div id="adminMsg" class="admin-msg"></div>
-      <div id="adminPedidosSummary" class="admin-summary" style="display:none;"></div>
-      <div id="adminListBody"></div>
-      <div id="adminPedidosLoadMoreWrap" style="display:none; text-align:center; margin-top:14px;">
-        <button type="button" class="btn btn-ghost" onclick="adminTab==='historial' ? loadMoreHistorialAdmin() : loadPedidosAdmin(false)">Cargar más</button>
-      </div>
-      <datalist id="adminClientesDatalist"></datalist>
     </div>
   </div>
 </div>
@@ -485,15 +513,15 @@
 <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.12.3/JsBarcode.all.min.js"></script>
 
 <!-- El ORDEN de estos archivos importa: no los reordenes. -->
-<script defer src="js/config.js?v=20260929a"></script>
+<script defer src="js/config.js?v=20260929b"></script>
 <script defer src="js/data.js?v=20260928a"></script>
-<script defer src="js/products-loader.js?v=20260929a"></script>
+<script defer src="js/products-loader.js?v=20260929b"></script>
 <script defer src="js/utils.js?v=20260921e"></script>
 <script defer src="js/dupes.js?v=20260928a"></script>
 <script defer src="js/catalog.js?v=20260928a"></script>
 <script defer src="js/cart.js?v=20260921e"></script>
 <script defer src="js/theme.js?v=20260921e"></script>
-<script defer src="js/order.js?v=20260928c"></script>
+<script defer src="js/order.js?v=20260929a"></script>
 <script defer src="js/history.js?v=20260921e"></script>
 <script defer src="js/calculator.js?v=20260921e"></script>
 <script defer src="js/lightbox.js?v=20260921e"></script>
@@ -501,7 +529,7 @@
 <script defer src="js/showcase.js?v=20260928a"></script>
 <script defer src="js/gate.js?v=20260921e"></script>
 <script defer src="js/feedback.js?v=20260921e"></script>
-<script defer src="js/admin.js?v=20260929a"></script>
-<script defer src="js/main.js?v=20260928a"></script>
+<script defer src="js/admin.js?v=20260929b"></script>
+<script defer src="js/main.js?v=20260929a"></script>
 </body>
 </html>
