@@ -13,6 +13,15 @@
 
 const ADMIN_SESSION_KEY = 'impohogar_admin_session';
 
+// Dominio "falso" para poder iniciar sesion con un usuario corto (ej.
+// "roy") en vez de escribir un correo. Supabase Auth siempre exige un
+// correo, asi que si lo que se escribe no trae "@" se le agrega este
+// dominio por detras antes de mandarlo -- ese correo nunca recibe
+// nada de verdad, solo sirve como casillero para la cuenta. Si en
+// Supabase el usuario SI se creo con un correo real (con @), escribir
+// el correo completo sigue funcionando igual.
+const ADMIN_USERNAME_DOMAIN = 'impohogar-admin.local';
+
 let adminSession = null; // { access_token, expires_at }
 let adminTab = 'productos';
 let adminEditingId = null; // id de producto o codigo de cliente en edicion (null = ninguno)
@@ -86,13 +95,16 @@ function closeAdminLogin() {
 }
 
 async function submitAdminLogin() {
-  const email = document.getElementById('adminLoginEmail').value.trim();
+  let email = document.getElementById('adminLoginEmail').value.trim();
   const password = document.getElementById('adminLoginPassword').value;
   const errEl = document.getElementById('adminLoginError');
   errEl.textContent = '';
   if (!email || !password) {
-    errEl.textContent = 'Completa correo y contraseña.';
+    errEl.textContent = 'Completa usuario y contraseña.';
     return;
+  }
+  if (!email.includes('@')) {
+    email = `${email.toLowerCase()}@${ADMIN_USERNAME_DOMAIN}`;
   }
   try {
     const resp = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {

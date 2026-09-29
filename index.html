@@ -358,8 +358,8 @@
       <button type="button" onclick="closeAdminLogin()" aria-label="Cerrar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
     </div>
     <div class="form-body">
-      <label class="field-label" for="adminLoginEmail">Correo</label>
-      <input id="adminLoginEmail" class="field-input" type="email" autocomplete="username">
+      <label class="field-label" for="adminLoginEmail">Usuario</label>
+      <input id="adminLoginEmail" class="field-input" type="text" autocomplete="username" placeholder="ej: roy">
       <label class="field-label" for="adminLoginPassword">Contraseña</label>
       <input id="adminLoginPassword" class="field-input" type="password" autocomplete="current-password" onkeydown="if(event.key==='Enter') submitAdminLogin()">
       <div id="adminLoginError" class="field-error" role="alert"></div>
@@ -529,7 +529,7 @@
 <script defer src="js/showcase.js?v=20260928a"></script>
 <script defer src="js/gate.js?v=20260921e"></script>
 <script defer src="js/feedback.js?v=20260921e"></script>
-<script defer src="js/admin.js?v=20260929c"></script>
+<script defer src="js/admin.js?v=20260929d"></script>
 <script defer src="js/main.js?v=20260929a"></script>
 </body>
 </html>
