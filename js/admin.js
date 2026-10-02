@@ -1315,12 +1315,16 @@ async function applyStockUpdate() {
         id: m.id, stock: m.stock, updated_at: new Date().toISOString()
       }));
       msg.textContent = `Actualizando ${Math.min(i + BATCH, total)} de ${total}...`;
-      const resp = await adminFetch('productos', {
+      const resp = await adminFetch('productos?on_conflict=id', {
         method: 'POST',
         headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
         body: JSON.stringify(batch)
       });
-      if (!resp.ok) throw new Error('HTTP ' + resp.status + ' al actualizar stock');
+      if (!resp.ok) {
+        let detail = '';
+        try { detail = (await resp.json()).message || ''; } catch (_) {}
+        throw new Error('HTTP ' + resp.status + (detail ? ' — ' + detail : '') + ' al actualizar stock');
+      }
       done += batch.length;
     }
     await logAdminAction('stock_masivo', 'productos', null, `${done} productos actualizados desde "${adminStockFile ? adminStockFile.name : 'Excel'}" (${adminStockAnalysis.unmatched.length} códigos sin coincidencia)`);
