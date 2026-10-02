@@ -11,10 +11,6 @@
 //  contraseña.
 // ============================================================
 
-console.log('ADMIN.JS CARGADO - version debug 20261002c');
-window.addEventListener('error', function(e) {
-  alert('ERROR DE JAVASCRIPT DETECTADO:\n' + e.message + '\nArchivo: ' + e.filename + '\nLinea: ' + e.lineno);
-});
 const ADMIN_SESSION_KEY = 'impohogar_admin_session';
 
 // Dominio "falso" para poder iniciar sesion con un usuario corto (ej.
@@ -1184,10 +1180,13 @@ function renderStockAdmin() {
         <div class="admin-summary">
           <div class="admin-stat"><div class="admin-stat-n">${a.totalRows}</div><div class="admin-stat-l">Filas en el Excel</div></div>
           <div class="admin-stat"><div class="admin-stat-n">${a.matched.length}</div><div class="admin-stat-l">Coincidieron con el catálogo</div></div>
+          <div class="admin-stat"><div class="admin-stat-n">${a.changed.length}</div><div class="admin-stat-l">Cambian de cantidad</div></div>
           <div class="admin-stat"><div class="admin-stat-n ${a.unmatched.length ? 'is-warn' : ''}">${a.unmatched.length}</div><div class="admin-stat-l">No están en el catálogo (se ignoran)</div></div>
         </div>
+        ${a.changed.length ? '' : '<p class="admin-row-sub" style="margin:12px 0 0;">El stock del catálogo ya coincide con este Excel: no hay nada que actualizar.</p>'}
+        <div id="stockApplyMsg" class="admin-msg"></div>
         <div style="margin-top:14px; display:flex; gap:8px; flex-wrap:wrap;">
-          <button type="button" class="btn btn-primary" onclick="try{alert('DEBUG 0: boton clickeado');applyStockUpdate()}catch(e){alert('ERROR AL LLAMAR LA FUNCION: '+e.message)}" ${adminStockBusy ? 'disabled' : ''}>Aplicar actualización (${a.matched.length})</button>
+          <button type="button" class="btn btn-primary" id="stockApplyBtn" onclick="applyStockUpdate()" ${a.changed.length ? '' : 'disabled'}>Aplicar actualización (${a.changed.length})</button>
           ${a.unmatched.length ? `<button type="button" class="btn btn-ghost" onclick="copyUnmatchedStockCodes()">Copiar códigos sin coincidencia</button>` : ''}
         </div>
       </div>
@@ -1237,7 +1236,7 @@ async function fetchAllProductCodesAdmin() {
   let from = 0;
   while (true) {
     const to = from + PAGE - 1;
-    const resp = await adminFetch(`productos?select=id,code&order=id.asc`, {
+    const resp = await adminFetch(`productos?select=id,code,stock&order=id.asc`, {
       headers: { Range: `${from}-${to}` }
     });
     if (!resp.ok && resp.status !== 206) throw new Error('HTTP ' + resp.status + ' al leer productos');
@@ -1287,7 +1286,7 @@ async function analyzeStockFile() {
     const matched = [];
     catalogRows.forEach(r => {
       if (excelMap.has(r.code)) {
-        matched.push({ id: r.id, code: r.code, stock: excelMap.get(r.code).stock });
+        matched.push({ id: r.id, code: r.code, stock: excelMap.get(r.code).stock, prev: r.stock });
       }
     });
 
@@ -1296,8 +1295,15 @@ async function analyzeStockFile() {
       if (!catalogCodes.has(code)) unmatched.push({ code, name: v.name, qty: v.stock });
     });
 
-    adminStockAnalysis = { matched, unmatched, totalRows };
+    // Solo se actualizan los que realmente cambian de cantidad.
+    const changed = matched.filter(m => Number(m.prev) !== m.stock);
+
+    adminStockAnalysis = { matched, changed, unmatched, totalRows };
     msg.textContent = '';
+    // OJO: liberar "ocupado" ANTES de redibujar. Antes se redibujaba con
+    // adminStockBusy todavia en true y el boton "Aplicar actualizacion"
+    // nacia deshabilitado (por eso no respondia al clic).
+    adminStockBusy = false;
     renderStockAdmin();
   } catch (err) {
     msg.textContent = 'Error al analizar el archivo: ' + err.message;
@@ -1307,44 +1313,73 @@ async function analyzeStockFile() {
 }
 
 async function applyStockUpdate() {
-  alert('DEBUG 1: boton presionado. adminStockAnalysis=' + (adminStockAnalysis ? 'SI' : 'NO') + ' busy=' + adminStockBusy);
-  if (!adminStockAnalysis || adminStockBusy) { alert('DEBUG: salio aqui porque no hay analisis o ya esta ocupado'); return; }
+  if (!adminStockAnalysis || adminStockBusy) return;
+  const changed = adminStockAnalysis.changed;
+  if (!changed.length) return;
   adminStockBusy = true;
-  const msg = document.getElementById('stockProgressMsg');
-  alert('DEBUG 2: msg element=' + (msg ? 'ENCONTRADO' : 'NO ENCONTRADO (este es el problema)'));
-  const total = adminStockAnalysis.matched.length;
-  const BATCH = 500;
+  const btn = document.getElementById('stockApplyBtn');
+  const msg = document.getElementById('stockApplyMsg');
+  if (btn) btn.disabled = true;
+
+  // Se agrupan los productos por la cantidad nueva y se manda un PATCH
+  // por grupo (stock = N para esos ids). Es una actualizacion pura: no
+  // inserta filas, asi que no puede fallar por columnas obligatorias
+  // ni crear productos por accidente.
+  const groups = new Map(); // stock -> [ids]
+  changed.forEach(m => {
+    if (!groups.has(m.stock)) groups.set(m.stock, []);
+    groups.get(m.stock).push(m.id);
+  });
+  const jobs = [];
+  const IDS_PER_REQUEST = 150;
+  groups.forEach((ids, stock) => {
+    for (let i = 0; i < ids.length; i += IDS_PER_REQUEST) {
+      jobs.push({ stock, ids: ids.slice(i, i + IDS_PER_REQUEST) });
+    }
+  });
+
+  const total = changed.length;
+  const now = new Date().toISOString();
   let done = 0;
   try {
-    for (let i = 0; i < total; i += BATCH) {
-      const batch = adminStockAnalysis.matched.slice(i, i + BATCH).map(m => ({
-        id: m.id, stock: m.stock, updated_at: new Date().toISOString()
-      }));
-      if (msg) msg.textContent = `Actualizando ${Math.min(i + BATCH, total)} de ${total}...`;
-      if (i === 0) alert('DEBUG 3: a punto de enviar el primer lote de ' + batch.length + ' productos a Supabase...');
-      const resp = await adminFetch('productos?on_conflict=id', {
-        method: 'POST',
-        headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
-        body: JSON.stringify(batch)
+    if (msg) msg.textContent = `Actualizando 0 de ${total}...`;
+    for (const job of jobs) {
+      const resp = await adminFetch(`productos?id=in.(${job.ids.join(',')})`, {
+        method: 'PATCH',
+        headers: { Prefer: 'return=representation' },
+        body: JSON.stringify({ stock: job.stock, updated_at: now })
       });
-      if (i === 0) alert('DEBUG 4: respuesta recibida. status=' + resp.status + ' ok=' + resp.ok);
       if (!resp.ok) {
         let detail = '';
         try { detail = (await resp.json()).message || ''; } catch (_) {}
         throw new Error('HTTP ' + resp.status + (detail ? ' — ' + detail : '') + ' al actualizar stock');
       }
-      done += batch.length;
+      const rows = await resp.json();
+      if (rows.length !== job.ids.length) {
+        throw new Error(`la base de datos solo aceptó ${rows.length} de ${job.ids.length} cambios (revisa que tu usuario tenga permiso para editar productos)`);
+      }
+      // Refleja la cantidad nueva en el catalogo de esta misma pestaña.
+      rows.forEach(r => {
+        if (Array.isArray(window.PRODUCTS)) {
+          const p = window.PRODUCTS.find(x => x.id === r.id);
+          if (p) p.stock = r.stock;
+        }
+        if (window.STOCK && r.code) window.STOCK[r.code] = parseInt(r.stock) || 0;
+      });
+      done += rows.length;
+      if (msg) msg.textContent = `Actualizando ${done} de ${total}...`;
     }
     await logAdminAction('stock_masivo', 'productos', null, `${done} productos actualizados desde "${adminStockFile ? adminStockFile.name : 'Excel'}" (${adminStockAnalysis.unmatched.length} códigos sin coincidencia)`);
-    if (msg) msg.textContent = '';
-    adminSetMsg(`Listo: ${done} productos actualizados.`, 'ok');
     adminStockFile = null;
     adminStockAnalysis = null;
-    document.getElementById('stockFileInput') && (document.getElementById('stockFileInput').value = '');
+    adminStockBusy = false;
     renderStockAdmin();
+    const okMsg = document.getElementById('stockProgressMsg');
+    if (okMsg) okMsg.textContent = `Listo: ${done} productos actualizados.`;
+    adminSetMsg(`Listo: ${done} productos actualizados.`, 'ok');
   } catch (err) {
-    alert('DEBUG ERROR: ' + err.message);
-    if (msg) msg.textContent = 'Error al actualizar: ' + err.message + ' (lo ya aplicado hasta este punto quedó guardado, puedes volver a correr el archivo para completar el resto).';
+    if (msg) msg.textContent = 'Error al actualizar: ' + err.message + ` (${done} de ${total} ya quedaron guardados; vuelve a analizar el archivo y aplica de nuevo para completar el resto).`;
+    if (btn) btn.disabled = false;
   } finally {
     adminStockBusy = false;
   }
