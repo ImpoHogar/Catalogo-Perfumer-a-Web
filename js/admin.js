@@ -11,6 +11,10 @@
 //  contraseña.
 // ============================================================
 
+console.log('ADMIN.JS CARGADO - version debug 20261002c');
+window.addEventListener('error', function(e) {
+  alert('ERROR DE JAVASCRIPT DETECTADO:\n' + e.message + '\nArchivo: ' + e.filename + '\nLinea: ' + e.lineno);
+});
 const ADMIN_SESSION_KEY = 'impohogar_admin_session';
 
 // Dominio "falso" para poder iniciar sesion con un usuario corto (ej.
@@ -1183,7 +1187,7 @@ function renderStockAdmin() {
           <div class="admin-stat"><div class="admin-stat-n ${a.unmatched.length ? 'is-warn' : ''}">${a.unmatched.length}</div><div class="admin-stat-l">No están en el catálogo (se ignoran)</div></div>
         </div>
         <div style="margin-top:14px; display:flex; gap:8px; flex-wrap:wrap;">
-          <button type="button" class="btn btn-primary" onclick="applyStockUpdate()" ${adminStockBusy ? 'disabled' : ''}>Aplicar actualización (${a.matched.length})</button>
+          <button type="button" class="btn btn-primary" onclick="try{alert('DEBUG 0: boton clickeado');applyStockUpdate()}catch(e){alert('ERROR AL LLAMAR LA FUNCION: '+e.message)}" ${adminStockBusy ? 'disabled' : ''}>Aplicar actualización (${a.matched.length})</button>
           ${a.unmatched.length ? `<button type="button" class="btn btn-ghost" onclick="copyUnmatchedStockCodes()">Copiar códigos sin coincidencia</button>` : ''}
         </div>
       </div>
