@@ -183,7 +183,7 @@ async function fetchAndStoreAdminRol() {
 function applyAdminRoleUI() {
   const rol = (adminSession && adminSession.rol) || 'admin';
   const isLimited = rol === 'pedidos';
-  ['adminTabProductos', 'adminTabClientes', 'adminTabAjustes', 'adminTabHistorial'].forEach(id => {
+  ['adminTabProductos', 'adminTabClientes', 'adminTabStock', 'adminTabAjustes', 'adminTabHistorial'].forEach(id => {
     document.getElementById(id).style.display = isLimited ? 'none' : '';
   });
   const userEl = document.getElementById('adminSidebarUser');
@@ -218,7 +218,7 @@ async function logAdminAction(accion, entidad, entidadId, detalle) {
 let adminShowPapelera = false;
 
 const ADMIN_TAB_TITLES = {
-  productos: 'Productos', clientes: 'Clientes', pedidos: 'Pedidos',
+  productos: 'Productos', clientes: 'Clientes', stock: 'Actualizar stock', pedidos: 'Pedidos',
   ranking: 'Ranking de más pedidos', ajustes: 'Ajustes', historial: 'Historial de cambios'
 };
 
@@ -240,13 +240,14 @@ function switchAdminTab(tab) {
   adminShowPapelera = false;
   document.getElementById('adminTabProductos').classList.toggle('active', tab === 'productos');
   document.getElementById('adminTabClientes').classList.toggle('active', tab === 'clientes');
+  document.getElementById('adminTabStock').classList.toggle('active', tab === 'stock');
   document.getElementById('adminTabPedidos').classList.toggle('active', tab === 'pedidos');
   document.getElementById('adminTabRanking').classList.toggle('active', tab === 'ranking');
   document.getElementById('adminTabAjustes').classList.toggle('active', tab === 'ajustes');
   document.getElementById('adminTabHistorial').classList.toggle('active', tab === 'historial');
   document.getElementById('adminPanelTitle').textContent = ADMIN_TAB_TITLES[tab] || 'Panel administrativo';
   document.getElementById('adminSearchInput').value = '';
-  document.getElementById('adminSearchInput').style.display = (tab === 'ajustes' || tab === 'ranking') ? 'none' : '';
+  document.getElementById('adminSearchInput').style.display = (tab === 'ajustes' || tab === 'ranking' || tab === 'stock') ? 'none' : '';
   document.getElementById('adminAddBtn').style.display = (tab === 'productos' || tab === 'clientes') ? '' : 'none';
   const papeleraBtn = document.getElementById('adminPapeleraBtn');
   papeleraBtn.style.display = (tab === 'productos' || tab === 'clientes') ? '' : 'none';
@@ -262,6 +263,7 @@ function switchAdminTab(tab) {
   document.getElementById('adminListBody').innerHTML = '';
   if (tab === 'productos') loadProductosAdmin('');
   else if (tab === 'clientes') loadClientesAdmin('');
+  else if (tab === 'stock') renderStockAdmin();
   else if (tab === 'pedidos') loadPedidosAdmin(true);
   else if (tab === 'ranking') loadRankingAdmin();
   else if (tab === 'ajustes') loadAjustesAdmin();
@@ -1136,6 +1138,216 @@ async function exportAdminPedidosExcel() {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+}
+
+// ============================================================
+//  STOCK MASIVO DESDE EXCEL
+// ============================================================
+//  Lee un Excel (mismo formato de siempre: hoja "Hoja2", columnas
+//  Codigo / Nombre / "Bod Principal") directo en el navegador con
+//  ExcelJS (ya cargado para los pedidos), lo cruza contra la tabla
+//  productos por codigo de barras, y sube el stock actualizado con
+//  un upsert por lotes -- reemplaza tener que pedir el SQL aparte.
+//  Codigos del Excel que no existan en el catalogo se ignoran (igual
+//  que el proceso manual) y se listan aparte para revisar si hay que
+//  dar de alta algo nuevo.
+// ============================================================
+
+let adminStockFile = null;
+let adminStockAnalysis = null; // { matched:[{id,code,stock}], unmatched:[{code,name,qty}], totalRows }
+let adminStockBusy = false;
+
+function renderStockAdmin() {
+  const body = document.getElementById('adminListBody');
+  let html = `
+    <div class="admin-ajustes-card">
+      <div class="admin-ajustes-title">Actualizar stock desde Excel</div>
+      <p class="admin-row-sub" style="margin:0 0 12px;">Mismo formato de siempre: hoja "Hoja2", columnas Código / Nombre / "Bod Principal". Los códigos que no estén en el catálogo se ignoran.</p>
+      <input type="file" id="stockFileInput" accept=".xlsx" class="field-input" style="margin-bottom:10px;" onchange="onStockFileChosen(event)">
+      <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <button type="button" class="btn btn-primary" id="stockAnalyzeBtn" onclick="analyzeStockFile()" disabled>Analizar archivo</button>
+        ${adminStockAnalysis ? `<button type="button" class="btn btn-ghost" onclick="resetStockAdmin()">Empezar de nuevo</button>` : ''}
+      </div>
+      <div id="stockProgressMsg" class="admin-msg"></div>
+    </div>
+  `;
+
+  if (adminStockAnalysis) {
+    const a = adminStockAnalysis;
+    html += `
+      <div class="admin-ajustes-card">
+        <div class="admin-ajustes-title">Resultado del análisis</div>
+        <div class="admin-summary">
+          <div class="admin-stat"><div class="admin-stat-n">${a.totalRows}</div><div class="admin-stat-l">Filas en el Excel</div></div>
+          <div class="admin-stat"><div class="admin-stat-n">${a.matched.length}</div><div class="admin-stat-l">Coincidieron con el catálogo</div></div>
+          <div class="admin-stat"><div class="admin-stat-n ${a.unmatched.length ? 'is-warn' : ''}">${a.unmatched.length}</div><div class="admin-stat-l">No están en el catálogo (se ignoran)</div></div>
+        </div>
+        <div style="margin-top:14px; display:flex; gap:8px; flex-wrap:wrap;">
+          <button type="button" class="btn btn-primary" onclick="applyStockUpdate()" ${adminStockBusy ? 'disabled' : ''}>Aplicar actualización (${a.matched.length})</button>
+          ${a.unmatched.length ? `<button type="button" class="btn btn-ghost" onclick="copyUnmatchedStockCodes()">Copiar códigos sin coincidencia</button>` : ''}
+        </div>
+      </div>
+    `;
+    if (a.unmatched.length) {
+      const shown = a.unmatched.slice(0, 300);
+      html += `
+        <div class="admin-ajustes-card">
+          <div class="admin-ajustes-title">Códigos del Excel que no están en el catálogo (${a.unmatched.length})</div>
+          <div class="admin-list">
+            ${shown.map(u => `
+              <div class="admin-row admin-row-static">
+                <div class="admin-row-main">
+                  <div class="admin-row-title">${escapeAdminHtml(u.name || '(sin nombre)')}</div>
+                  <div class="admin-row-sub">Código ${escapeAdminHtml(u.code)} · Cantidad ${u.qty}</div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+          ${a.unmatched.length > shown.length ? `<p class="admin-row-sub" style="margin-top:8px;">Mostrando los primeros ${shown.length} de ${a.unmatched.length}. Usa "Copiar códigos sin coincidencia" para ver la lista completa.</p>` : ''}
+        </div>
+      `;
+    }
+  }
+
+  body.innerHTML = html;
+}
+
+function resetStockAdmin() {
+  adminStockFile = null;
+  adminStockAnalysis = null;
+  renderStockAdmin();
+}
+
+function onStockFileChosen(event) {
+  adminStockFile = event.target.files[0] || null;
+  adminStockAnalysis = null;
+  document.getElementById('stockAnalyzeBtn').disabled = !adminStockFile;
+  document.getElementById('stockProgressMsg').textContent = '';
+}
+
+// Trae id+code de TODOS los productos (paginado, igual que hace el
+// catalogo publico al cargar) para poder cruzar por codigo.
+async function fetchAllProductCodesAdmin() {
+  const PAGE = 1000;
+  const out = [];
+  let from = 0;
+  while (true) {
+    const to = from + PAGE - 1;
+    const resp = await adminFetch(`productos?select=id,code&order=id.asc`, {
+      headers: { Range: `${from}-${to}` }
+    });
+    if (!resp.ok && resp.status !== 206) throw new Error('HTTP ' + resp.status + ' al leer productos');
+    const batch = await resp.json();
+    out.push(...batch);
+    if (batch.length < PAGE) break;
+    from += PAGE;
+  }
+  return out;
+}
+
+async function analyzeStockFile() {
+  if (!adminStockFile || adminStockBusy) return;
+  adminStockBusy = true;
+  const msg = document.getElementById('stockProgressMsg');
+  msg.textContent = 'Leyendo el Excel...';
+  try {
+    const buf = await adminStockFile.arrayBuffer();
+    const wb = new ExcelJS.Workbook();
+    await wb.xlsx.load(buf);
+    const ws = wb.getWorksheet('Hoja2') || wb.worksheets[0];
+    if (!ws) throw new Error('El Excel no tiene hojas.');
+
+    const excelMap = new Map(); // code -> { stock, name }
+    let totalRows = 0;
+    ws.eachRow((row, rowNumber) => {
+      if (rowNumber === 1) return; // encabezado
+      const rawCode = row.getCell(1).value;
+      if (rawCode === null || rawCode === undefined) return;
+      const code = String(rawCode).trim();
+      if (!code) return;
+      const name = row.getCell(2).value;
+      const rawStock = row.getCell(3).value;
+      let stock = parseInt(parseFloat(String(rawStock).trim()), 10);
+      if (isNaN(stock)) stock = 0;
+      if (stock < 0) stock = 0;
+      totalRows++;
+      excelMap.set(code, { stock, name: name != null ? String(name).trim() : '' });
+    });
+
+    if (!totalRows) throw new Error('No se encontraron filas con código en la hoja "Hoja2".');
+
+    msg.textContent = 'Comparando contra el catálogo...';
+    const catalogRows = await fetchAllProductCodesAdmin();
+    const catalogCodes = new Set(catalogRows.map(r => r.code));
+
+    const matched = [];
+    catalogRows.forEach(r => {
+      if (excelMap.has(r.code)) {
+        matched.push({ id: r.id, code: r.code, stock: excelMap.get(r.code).stock });
+      }
+    });
+
+    const unmatched = [];
+    excelMap.forEach((v, code) => {
+      if (!catalogCodes.has(code)) unmatched.push({ code, name: v.name, qty: v.stock });
+    });
+
+    adminStockAnalysis = { matched, unmatched, totalRows };
+    msg.textContent = '';
+    renderStockAdmin();
+  } catch (err) {
+    msg.textContent = 'Error al analizar el archivo: ' + err.message;
+  } finally {
+    adminStockBusy = false;
+  }
+}
+
+async function applyStockUpdate() {
+  if (!adminStockAnalysis || adminStockBusy) return;
+  adminStockBusy = true;
+  const msg = document.getElementById('stockProgressMsg');
+  const total = adminStockAnalysis.matched.length;
+  const BATCH = 500;
+  let done = 0;
+  try {
+    for (let i = 0; i < total; i += BATCH) {
+      const batch = adminStockAnalysis.matched.slice(i, i + BATCH).map(m => ({
+        id: m.id, stock: m.stock, updated_at: new Date().toISOString()
+      }));
+      msg.textContent = `Actualizando ${Math.min(i + BATCH, total)} de ${total}...`;
+      const resp = await adminFetch('productos', {
+        method: 'POST',
+        headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
+        body: JSON.stringify(batch)
+      });
+      if (!resp.ok) throw new Error('HTTP ' + resp.status + ' al actualizar stock');
+      done += batch.length;
+    }
+    await logAdminAction('stock_masivo', 'productos', null, `${done} productos actualizados desde "${adminStockFile ? adminStockFile.name : 'Excel'}" (${adminStockAnalysis.unmatched.length} códigos sin coincidencia)`);
+    msg.textContent = '';
+    adminSetMsg(`Listo: ${done} productos actualizados.`, 'ok');
+    adminStockFile = null;
+    adminStockAnalysis = null;
+    document.getElementById('stockFileInput') && (document.getElementById('stockFileInput').value = '');
+    renderStockAdmin();
+  } catch (err) {
+    msg.textContent = 'Error al actualizar: ' + err.message + ' (lo ya aplicado hasta este punto quedó guardado, puedes volver a correr el archivo para completar el resto).';
+  } finally {
+    adminStockBusy = false;
+  }
+}
+
+function copyUnmatchedStockCodes() {
+  if (!adminStockAnalysis) return;
+  const text = adminStockAnalysis.unmatched
+    .map(u => `${u.code}\t${u.name || ''}\t${u.qty}`)
+    .join('\n');
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(
+      () => adminSetMsg('Lista copiada al portapapeles.', 'ok'),
+      () => adminSetMsg('No se pudo copiar automáticamente.', 'error')
+    );
+  }
 }
 
 // ============================================================
