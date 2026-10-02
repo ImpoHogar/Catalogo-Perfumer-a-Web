@@ -1303,9 +1303,11 @@ async function analyzeStockFile() {
 }
 
 async function applyStockUpdate() {
-  if (!adminStockAnalysis || adminStockBusy) return;
+  alert('DEBUG 1: boton presionado. adminStockAnalysis=' + (adminStockAnalysis ? 'SI' : 'NO') + ' busy=' + adminStockBusy);
+  if (!adminStockAnalysis || adminStockBusy) { alert('DEBUG: salio aqui porque no hay analisis o ya esta ocupado'); return; }
   adminStockBusy = true;
   const msg = document.getElementById('stockProgressMsg');
+  alert('DEBUG 2: msg element=' + (msg ? 'ENCONTRADO' : 'NO ENCONTRADO (este es el problema)'));
   const total = adminStockAnalysis.matched.length;
   const BATCH = 500;
   let done = 0;
@@ -1314,12 +1316,14 @@ async function applyStockUpdate() {
       const batch = adminStockAnalysis.matched.slice(i, i + BATCH).map(m => ({
         id: m.id, stock: m.stock, updated_at: new Date().toISOString()
       }));
-      msg.textContent = `Actualizando ${Math.min(i + BATCH, total)} de ${total}...`;
+      if (msg) msg.textContent = `Actualizando ${Math.min(i + BATCH, total)} de ${total}...`;
+      if (i === 0) alert('DEBUG 3: a punto de enviar el primer lote de ' + batch.length + ' productos a Supabase...');
       const resp = await adminFetch('productos?on_conflict=id', {
         method: 'POST',
         headers: { Prefer: 'resolution=merge-duplicates,return=minimal' },
         body: JSON.stringify(batch)
       });
+      if (i === 0) alert('DEBUG 4: respuesta recibida. status=' + resp.status + ' ok=' + resp.ok);
       if (!resp.ok) {
         let detail = '';
         try { detail = (await resp.json()).message || ''; } catch (_) {}
@@ -1328,14 +1332,15 @@ async function applyStockUpdate() {
       done += batch.length;
     }
     await logAdminAction('stock_masivo', 'productos', null, `${done} productos actualizados desde "${adminStockFile ? adminStockFile.name : 'Excel'}" (${adminStockAnalysis.unmatched.length} códigos sin coincidencia)`);
-    msg.textContent = '';
+    if (msg) msg.textContent = '';
     adminSetMsg(`Listo: ${done} productos actualizados.`, 'ok');
     adminStockFile = null;
     adminStockAnalysis = null;
     document.getElementById('stockFileInput') && (document.getElementById('stockFileInput').value = '');
     renderStockAdmin();
   } catch (err) {
-    msg.textContent = 'Error al actualizar: ' + err.message + ' (lo ya aplicado hasta este punto quedó guardado, puedes volver a correr el archivo para completar el resto).';
+    alert('DEBUG ERROR: ' + err.message);
+    if (msg) msg.textContent = 'Error al actualizar: ' + err.message + ' (lo ya aplicado hasta este punto quedó guardado, puedes volver a correr el archivo para completar el resto).';
   } finally {
     adminStockBusy = false;
   }
