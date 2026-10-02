@@ -18,7 +18,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Jost:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/styles.css?v=20260929b">
+<link rel="stylesheet" href="css/styles.css?v=20261002a">
 </head>
 <body>
 <noscript>
@@ -431,6 +431,32 @@
           <button type="button" id="adminPapeleraBtn" class="btn btn-ghost" style="display:none;" onclick="toggleAdminPapelera()">Ver papelera</button>
           <button type="button" id="adminAddBtn" class="btn btn-primary" onclick="adminTab==='productos' ? openAdminNewProduct() : openAdminNewClient()">+ Agregar</button>
         </div>
+        <div id="adminProductosFilters" class="admin-toolbar" style="display:none; flex-wrap:wrap;">
+          <div>
+            <label class="field-label" for="adminFiltroMarca">Marca</label>
+            <select id="adminFiltroMarca" class="field-input admin-filters-select" onchange="onAdminProductosFilterChange()">
+              <option value="">Todas</option>
+            </select>
+          </div>
+          <div>
+            <label class="field-label" for="adminFiltroGenero">Género</label>
+            <select id="adminFiltroGenero" class="field-input admin-filters-select" onchange="onAdminProductosFilterChange()">
+              <option value="">Todos</option>
+            </select>
+          </div>
+          <div>
+            <label class="field-label" for="adminFiltroTipo">Tipo</label>
+            <select id="adminFiltroTipo" class="field-input admin-filters-select" onchange="onAdminProductosFilterChange()">
+              <option value="">Todos</option>
+            </select>
+          </div>
+          <label class="admin-filters-check"><input type="checkbox" id="adminFiltroSinFoto" onchange="onAdminProductosFilterChange()"> Sin foto</label>
+          <label class="admin-filters-check"><input type="checkbox" id="adminFiltroAgotados" onchange="onAdminProductosFilterChange()"> Agotados</label>
+          <label class="admin-filters-check"><input type="checkbox" id="adminFiltroOcultos" onchange="onAdminProductosFilterChange()"> Ocultos</label>
+          <label class="admin-filters-check"><input type="checkbox" id="adminFiltroNuevo" onchange="onAdminProductosFilterChange()"> Nuevo ingreso</label>
+          <button type="button" class="btn btn-ghost" style="margin-top:18px;" onclick="clearAdminProductosFilters()">Limpiar filtros</button>
+          <button type="button" class="btn btn-primary" style="margin-top:18px;" onclick="exportAdminCatalogoExcel()">Exportar catálogo a Excel</button>
+        </div>
         <div id="adminPedidosFilters" class="admin-toolbar" style="display:none;">
           <div>
             <label class="field-label" for="adminPedidosFrom">Desde</label>
@@ -533,7 +559,7 @@
 <script defer src="js/showcase.js?v=20260928a"></script>
 <script defer src="js/gate.js?v=20260921e"></script>
 <script defer src="js/feedback.js?v=20260921e"></script>
-<script defer src="js/admin.js?v=20261002e"></script>
+<script defer src="js/admin.js?v=20261002f"></script>
 <script defer src="js/main.js?v=20260929a"></script>
 </body>
 </html>

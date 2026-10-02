@@ -253,6 +253,7 @@ function switchAdminTab(tab) {
   papeleraBtn.style.display = (tab === 'productos' || tab === 'clientes') ? '' : 'none';
   papeleraBtn.textContent = 'Ver papelera';
   document.getElementById('adminPedidosFilters').style.display = tab === 'pedidos' ? 'flex' : 'none';
+  document.getElementById('adminProductosFilters').style.display = tab === 'productos' ? 'flex' : 'none';
   document.getElementById('adminPedidosSummary').style.display = tab === 'pedidos' ? 'grid' : 'none';
   document.getElementById('adminPedidosLoadMoreWrap').style.display = 'none';
   if (tab === 'productos') document.getElementById('adminSearchInput').placeholder = 'Buscar por código, nombre o marca...';
@@ -261,7 +262,7 @@ function switchAdminTab(tab) {
   else if (tab === 'historial') document.getElementById('adminSearchInput').placeholder = 'Buscar por acción, entidad o correo...';
   document.getElementById('adminMsg').textContent = '';
   document.getElementById('adminListBody').innerHTML = '';
-  if (tab === 'productos') loadProductosAdmin('');
+  if (tab === 'productos') { loadAdminProductosFacets(); loadProductosAdmin(''); }
   else if (tab === 'clientes') loadClientesAdmin('');
   else if (tab === 'stock') renderStockAdmin();
   else if (tab === 'pedidos') loadPedidosAdmin(true);
@@ -277,6 +278,8 @@ function toggleAdminPapelera() {
   adminShowPapelera = !adminShowPapelera;
   document.getElementById('adminPapeleraBtn').textContent = adminShowPapelera ? 'Ver activos' : 'Ver papelera';
   document.getElementById('adminAddBtn').style.display = adminShowPapelera ? 'none' : '';
+  const prodFilters = document.getElementById('adminProductosFilters');
+  if (prodFilters && adminTab === 'productos') prodFilters.style.display = adminShowPapelera ? 'none' : 'flex';
   document.getElementById('adminSearchInput').value = '';
   if (adminTab === 'productos') loadProductosAdmin('');
   else if (adminTab === 'clientes') loadClientesAdmin('');
@@ -304,16 +307,156 @@ function onAdminSearch() {
 //  PRODUCTOS
 // ============================================================
 
+// Cache de valores unicos de marca/tipo/genero para llenar los
+// selects de filtro. Se carga una sola vez por sesion (se vuelve a
+// armar si se agregan productos nuevos y se reabre la pestana, porque
+// switchAdminTab la vuelve a pedir, pero el fetch en si es barato).
+let adminProductosFacets = null;
+
+async function fetchAllProductosAdmin(select) {
+  const PAGE = 1000;
+  const out = [];
+  let from = 0;
+  while (true) {
+    const to = from + PAGE - 1;
+    const resp = await adminFetch(`productos?select=${select}&eliminado_en=is.null&order=id.asc`, {
+      headers: { Range: `${from}-${to}` }
+    });
+    if (!resp.ok && resp.status !== 206) throw new Error('HTTP ' + resp.status + ' al leer productos');
+    const batch = await resp.json();
+    out.push(...batch);
+    if (batch.length < PAGE) break;
+    from += PAGE;
+  }
+  return out;
+}
+
+async function loadAdminProductosFacets() {
+  const marcaSel = document.getElementById('adminFiltroMarca');
+  const generoSel = document.getElementById('adminFiltroGenero');
+  const tipoSel = document.getElementById('adminFiltroTipo');
+  if (!marcaSel) return;
+  if (adminProductosFacets) {
+    fillAdminFacetSelect(marcaSel, adminProductosFacets.brands, 'Todas');
+    fillAdminFacetSelect(generoSel, adminProductosFacets.generos, 'Todos');
+    fillAdminFacetSelect(tipoSel, adminProductosFacets.tipos, 'Todos');
+    return;
+  }
+  try {
+    const rows = await fetchAllProductosAdmin('brand,tipo,genero');
+    const brands = [...new Set(rows.map(r => r.brand).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'es'));
+    const tipos = [...new Set(rows.map(r => r.tipo).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'es'));
+    const generos = [...new Set(rows.map(r => r.genero).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'es'));
+    adminProductosFacets = { brands, tipos, generos };
+    fillAdminFacetSelect(marcaSel, brands, 'Todas');
+    fillAdminFacetSelect(generoSel, generos, 'Todos');
+    fillAdminFacetSelect(tipoSel, tipos, 'Todos');
+  } catch (err) {
+    // Si falla, los filtros de marca/genero/tipo simplemente quedan
+    // en "Todas/Todos" -- no bloquea el resto del panel.
+  }
+}
+
+function fillAdminFacetSelect(selectEl, values, allLabel) {
+  if (!selectEl) return;
+  const current = selectEl.value;
+  selectEl.innerHTML = `<option value="">${allLabel}</option>` +
+    values.map(v => `<option value="${escapeAdminHtml(v)}">${escapeAdminHtml(v)}</option>`).join('');
+  if (values.includes(current)) selectEl.value = current;
+}
+
+function buildAdminProductosFilterQuery() {
+  const marca = document.getElementById('adminFiltroMarca');
+  if (!marca) return ''; // filtros aun no estan en el DOM (otra pestana)
+  const genero = document.getElementById('adminFiltroGenero');
+  const tipo = document.getElementById('adminFiltroTipo');
+  const sinFoto = document.getElementById('adminFiltroSinFoto');
+  const agotados = document.getElementById('adminFiltroAgotados');
+  const ocultos = document.getElementById('adminFiltroOcultos');
+  const nuevo = document.getElementById('adminFiltroNuevo');
+  let q = '';
+  if (marca.value) q += `&brand=eq.${encodeURIComponent(marca.value)}`;
+  if (genero.value) q += `&genero=eq.${encodeURIComponent(genero.value)}`;
+  if (tipo.value) q += `&tipo=eq.${encodeURIComponent(tipo.value)}`;
+  if (sinFoto.checked) q += `&img=is.false`;
+  if (agotados.checked) q += `&stock=lte.0`;
+  if (ocultos.checked) q += `&hidden=is.true`;
+  if (nuevo.checked) q += `&date_added=not.is.null`;
+  return q;
+}
+
+function onAdminProductosFilterChange() {
+  loadProductosAdmin(document.getElementById('adminSearchInput').value.trim());
+}
+
+function clearAdminProductosFilters() {
+  ['adminFiltroMarca', 'adminFiltroGenero', 'adminFiltroTipo'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  ['adminFiltroSinFoto', 'adminFiltroAgotados', 'adminFiltroOcultos', 'adminFiltroNuevo'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.checked = false;
+  });
+  loadProductosAdmin(document.getElementById('adminSearchInput').value.trim());
+}
+
+async function exportAdminCatalogoExcel() {
+  if (typeof ExcelJS === 'undefined') {
+    adminSetMsg('Librería Excel no cargó, revisa tu conexión a internet.', 'error');
+    return;
+  }
+  adminSetMsg('Preparando el Excel del catálogo...');
+  try {
+    const rows = await fetchAllProductosAdmin('code,brand,name,tipo,genero,stock,img,hidden,date_added');
+    const wb = new ExcelJS.Workbook();
+    const sheet = wb.addWorksheet('Catálogo');
+    sheet.columns = [
+      { header: 'Código', key: 'code', width: 18 },
+      { header: 'Marca', key: 'brand', width: 22 },
+      { header: 'Nombre', key: 'name', width: 45 },
+      { header: 'Tipo', key: 'tipo', width: 16 },
+      { header: 'Género', key: 'genero', width: 14 },
+      { header: 'Stock', key: 'stock', width: 10 },
+      { header: 'Tiene foto', key: 'img', width: 12 },
+      { header: 'Oculto', key: 'hidden', width: 10 },
+      { header: 'Nuevo ingreso desde', key: 'date_added', width: 18 }
+    ];
+    sheet.getRow(1).font = { bold: true };
+    rows.forEach(p => {
+      sheet.addRow({
+        code: p.code, brand: p.brand, name: p.name, tipo: p.tipo || '', genero: p.genero || '',
+        stock: p.stock, img: p.img ? 'Sí' : 'No', hidden: p.hidden ? 'Sí' : 'No',
+        date_added: p.date_added || ''
+      });
+    });
+    const buffer = await wb.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Catalogo_ImpoHogar_${new Date().toISOString().slice(0, 10)}.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    adminSetMsg(`Catálogo exportado (${rows.length} productos).`, 'ok');
+  } catch (err) {
+    adminSetMsg('Error al exportar: ' + err.message, 'error');
+  }
+}
+
 async function loadProductosAdmin(term) {
   adminSetMsg('Cargando...');
   document.getElementById('adminListBody').innerHTML = '';
   try {
-    const cols = 'id,code,brand,name,tipo,genero,img,hidden,stock,eliminado_en';
+    const cols = 'id,code,brand,name,tipo,genero,img,hidden,stock,eliminado_en,date_added';
     const trash = adminShowPapelera ? '&eliminado_en=not.is.null' : '&eliminado_en=is.null';
-    let url = `productos?select=${cols}&order=id.desc&limit=60${trash}`;
+    const filtros = adminShowPapelera ? '' : buildAdminProductosFilterQuery();
+    let url = `productos?select=${cols}&order=id.desc&limit=60${trash}${filtros}`;
     if (term) {
       const t = term.replace(/[,()]/g, '');
-      url = `productos?select=${cols}&or=(code.ilike.*${t}*,name.ilike.*${t}*,brand.ilike.*${t}*)&order=id.asc&limit=60${trash}`;
+      url = `productos?select=${cols}&or=(code.ilike.*${t}*,name.ilike.*${t}*,brand.ilike.*${t}*)&order=id.asc&limit=60${trash}${filtros}`;
     }
     const resp = await adminFetch(url);
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
@@ -355,7 +498,10 @@ function renderProductosAdmin(rows) {
           <div class="admin-row-title">${escapeAdminHtml(p.brand)} — ${escapeAdminHtml(p.name)}</div>
           <div class="admin-row-sub">Código ${escapeAdminHtml(p.code)} · ${escapeAdminHtml(p.tipo || '')} · Stock ${p.stock}</div>
         </div>
-        <span class="admin-pill ${p.img && !p.hidden ? 'admin-pill-ok' : 'admin-pill-off'}">${p.img && !p.hidden ? 'Visible' : (p.hidden ? 'Oculto' : 'Sin foto')}</span>
+        <div style="display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end;">
+          ${p.date_added ? '<span class="admin-pill admin-pill-new">Nuevo</span>' : ''}
+          <span class="admin-pill ${p.img && !p.hidden ? 'admin-pill-ok' : 'admin-pill-off'}">${p.img && !p.hidden ? 'Visible' : (p.hidden ? 'Oculto' : 'Sin foto')}</span>
+        </div>
       </div>
       <div id="adminEditWrap-p${p.id}"></div>
     </div>

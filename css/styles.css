@@ -1522,6 +1522,9 @@ body.dark .calc-grid button:hover { filter: brightness(1.2); }
 .admin-pill { font-size: 10.5px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; white-space: nowrap; }
 .admin-pill-ok { background: var(--gold-soft); color: var(--gold); }
 .admin-pill-off { background: var(--surface-2); color: var(--muted); }
+.admin-pill-new { background: var(--accent); color: var(--accent-ink); }
+.admin-filters-select { height: 40px; min-width: 150px; }
+.admin-filters-check { display: flex; align-items: center; gap: 6px; font-size: 12.5px; margin-top: 18px; white-space: nowrap; }
 .admin-edit-panel { margin-top: 12px; padding: 16px; border: 1px solid var(--line-strong); border-radius: var(--r-md); background: var(--surface-2); }
 .admin-edit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px; }
 .admin-edit-grid .field-full { grid-column: 1 / -1; }
