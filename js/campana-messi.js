@@ -50,7 +50,7 @@ const MESSI_CAMPAIGN = {
 
   // ---- Textos de la campaña ----
   etiqueta:  "CAMPAÑA ESPECIAL · OCTUBRE 2026",
-  titulo:    "EL MOMENTO MESSI",
+  titulo:    "UN NOMBRE QUE VENDE, UN AROMA QUE CONQUISTA.",
   subtitulo: "Una leyenda. Una historia. Un aroma.",
   bajada:    "El momento de una leyenda también puede convertirse en una oportunidad para tu negocio.",
   cta:       "DESCUBRIR PERFUME MESSI"
@@ -251,7 +251,7 @@ function renderMessiCampaign() {
       <div class="mz-copy">
         <span class="mz-flag" aria-hidden="true"></span>
         <span class="mz-tag">${messiEsc(MESSI_CAMPAIGN.etiqueta)}</span>
-        <h2 class="mz-title"><span class="mz-emoji" aria-hidden="true">🇦🇷</span> ${messiEsc(MESSI_CAMPAIGN.titulo)}</h2>
+        <h2 class="mz-title">${messiEsc(MESSI_CAMPAIGN.titulo)}</h2>
         <p class="mz-sub">${messiEsc(MESSI_CAMPAIGN.subtitulo)}</p>
         <p class="mz-lead">${messiEsc(MESSI_CAMPAIGN.bajada)}</p>
         <div class="mz-actions">
