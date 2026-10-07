@@ -1556,3 +1556,7 @@ body.dark .calc-grid button:hover { filter: brightness(1.2); }
   .admin-edit-grid { grid-template-columns: 1fr; }
   .admin-batch-row, .admin-marca-row { flex-wrap: wrap; }
 }
+
+/* ---------- Pantalla de clave: "Recordar este dispositivo" ---------- */
+.gate-remember { display: flex; align-items: center; gap: 8px; margin: 12px 0 2px; font-size: 13.5px; color: #CFCAC2; cursor: pointer; user-select: none; }
+.gate-remember input { width: 16px; height: 16px; margin: 0; accent-color: #C9A24A; cursor: pointer; }
