@@ -257,19 +257,24 @@ function sellerFormattedPhone(phone) {
 
 // Arma el modal de "elige tu vendedor" a partir de SELLERS (definido
 // en config.js, y sobreescrito en tiempo real por products-loader.js
-// con lo que haya en Supabase). Se llama al cargar el catalogo y de
-// nuevo cada vez que el panel administrativo guarda cambios en la
-// lista de vendedores.
+// con lo que haya en Supabase). Se llama JUSTO ANTES de abrir el modal
+// (ver openSellerModal) y de nuevo cada vez que el panel administrativo
+// guarda cambios en la lista de vendedores.
 function renderSellerModal() {
   const list = document.getElementById('sellerList');
-  if (!list || typeof SELLERS === 'undefined') return;
-  const keys = Object.keys(SELLERS);
+  if (!list) return;
+  // Si por lo que sea la lista de Supabase llega vacia o rota, se usan
+  // los vendedores de respaldo de config.js: el cliente nunca se queda
+  // sin a quien mandarle el pedido.
+  let lista = (typeof SELLERS !== 'undefined' && SELLERS && typeof SELLERS === 'object') ? SELLERS : {};
+  if (!Object.keys(lista).length && typeof SELLERS_RESPALDO !== 'undefined') lista = SELLERS_RESPALDO;
+  const keys = Object.keys(lista).filter(k => lista[k] && lista[k].name && lista[k].phone);
   if (!keys.length) {
-    list.innerHTML = '<p style="font-size:13px; color:var(--muted);">No hay vendedores configurados.</p>';
+    list.innerHTML = '<p style="font-size:13px; color:var(--muted);">No hay vendedores configurados. Avísale a ImpoHogar para que los agregue desde el panel.</p>';
     return;
   }
   list.innerHTML = keys.map(key => {
-    const s = SELLERS[key];
+    const s = lista[key];
     return `
       <button type="button" class="seller-option" onclick="sendToSeller('${key}')">
         <span class="seller-avatar">${sellerInitials(s.name)}</span>
@@ -281,6 +286,10 @@ function renderSellerModal() {
 }
 
 function openSellerModal() {
+  // Se dibuja SIEMPRE antes de abrir: antes solo se dibujaba cuando el
+  // panel administrativo guardaba vendedores, asi que al cliente le
+  // salia la ventana vacia.
+  renderSellerModal();
   document.getElementById('sellerModal').classList.add('open');
 }
 
@@ -289,7 +298,8 @@ function closeSellerModal() {
 }
 
 function sendToSeller(key) {
-  const seller = SELLERS[key];
+  let lista = (typeof SELLERS !== 'undefined' && SELLERS && Object.keys(SELLERS).length) ? SELLERS : (typeof SELLERS_RESPALDO !== 'undefined' ? SELLERS_RESPALDO : {});
+  const seller = lista[key];
   if (!seller) return;
   const s = lastOrderSummary;
   const message = `Buenas, mi nombre es ${s.name || ''}, este es mi pedido.`;

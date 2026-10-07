@@ -91,10 +91,15 @@ const HAS_PHOTOS = true;
 // desde el panel administrativo (pestaña Ajustes). Lo de aca abajo es
 // solo el respaldo si el catalogo no logra traer los ajustes. Es
 // "let" (no "const") para que products-loader.js pueda reemplazarlo.
-let SELLERS = {
+// Respaldo fijo: si Supabase no responde o devuelve la lista vacia, el
+// catalogo usa estos vendedores para que el cliente siempre tenga a
+// quien enviarle el pedido.
+const SELLERS_RESPALDO = {
   roy: { name: 'Roy Chacón', phone: '50687203737' },
   pedro: { name: 'Pedro Alemán', phone: '50672349212' }
 };
+
+let SELLERS = { ...SELLERS_RESPALDO };
 
 // URL de despliegue del Google Apps Script que recibe los mensajes
 // del formulario de feedback (con fotos adjuntas).
