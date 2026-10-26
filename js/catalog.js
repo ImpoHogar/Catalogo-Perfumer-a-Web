@@ -9,6 +9,25 @@ let diaNinoMode = false;
 
 let nuevosIngresosMode = false;
 
+// Subcatalogo secreto de articulos timbrables. Se activa escribiendo la
+// palabra secreta (ver CLAVE_TIMBRABLES en main.js) en el buscador.
+let timbrablesMode = false;
+
+let _timbrablesSet = null;
+let _timbrablesRef = null;
+
+function normalizarCodigo(c) {
+  return String(c || '').trim().replace(/^0+/, '');
+}
+
+function esTimbrable(p) {
+  if (_timbrablesRef !== TIMBRABLES_CODES) {
+    _timbrablesRef = TIMBRABLES_CODES;
+    _timbrablesSet = new Set(TIMBRABLES_CODES.map(normalizarCodigo));
+  }
+  return _timbrablesSet.has(normalizarCodigo(p.code));
+}
+
 let filteredProducts = [];
 
 let renderedCount = 0;
@@ -310,6 +329,11 @@ function computeFiltered() {
   const brand = document.getElementById('brandFilter').value;
   return VISIBLE_PRODUCTS.filter(p => {
     const matchText = !q || p.name.toLowerCase().includes(q) || p.code.includes(q);
+    if (timbrablesMode) {
+      const okMarca = !brand || p.brand === brand;
+      const okCategoria = selectedTipoGenero.size === 0 || selectedTipoGenero.has(getTipoGeneroBucket(p));
+      return matchText && okMarca && okCategoria && esTimbrable(p);
+    }
     if (diaNinoMode) {
       return matchText && DIA_DEL_NINO_CATEGORIES.includes(p.brand);
     }
@@ -412,6 +436,8 @@ function showDiaDelNino() {
   clearTipoGenero();
   nuevosIngresosMode = false;
   document.getElementById('nuevosIngresosBanner').style.display = 'none';
+  timbrablesMode = false;
+  document.getElementById('timbrablesBanner').style.display = 'none';
   diaNinoMode = true;
   applyFilters();
   document.getElementById('diaNinoBanner').style.display = 'flex';
@@ -429,6 +455,8 @@ function showNuevosIngresos() {
   clearTipoGenero();
   diaNinoMode = false;
   document.getElementById('diaNinoBanner').style.display = 'none';
+  timbrablesMode = false;
+  document.getElementById('timbrablesBanner').style.display = 'none';
   nuevosIngresosMode = true;
   applyFilters();
   document.getElementById('nuevosIngresosBanner').style.display = 'flex';
@@ -438,6 +466,25 @@ function exitNuevosIngresos() {
   nuevosIngresosMode = false;
   applyFilters();
   document.getElementById('nuevosIngresosBanner').style.display = 'none';
+}
+
+function showTimbrables() {
+  document.getElementById('search').value = '';
+  document.getElementById('brandFilter').value = '';
+  clearTipoGenero();
+  diaNinoMode = false;
+  document.getElementById('diaNinoBanner').style.display = 'none';
+  nuevosIngresosMode = false;
+  document.getElementById('nuevosIngresosBanner').style.display = 'none';
+  timbrablesMode = true;
+  applyFilters();
+  document.getElementById('timbrablesBanner').style.display = 'flex';
+}
+
+function exitTimbrables() {
+  timbrablesMode = false;
+  applyFilters();
+  document.getElementById('timbrablesBanner').style.display = 'none';
 }
 
 function applyFilters() {

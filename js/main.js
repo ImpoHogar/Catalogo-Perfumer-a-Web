@@ -13,6 +13,10 @@
 //  Se duplica la fila completa una vez para que el loop de la
 //  animacion (en css/styles.css) no muestre ningun corte.
 // ============================================================
+// Palabra secreta que abre el subcatalogo de articulos timbrables cuando
+// se escribe en el buscador. Para cambiarla, solo editar esta linea.
+const CLAVE_TIMBRABLES = 'timbrado26';
+
 function renderBrandMarquee() {
   const track = document.getElementById('brandMarqueeTrack');
   if (!track || typeof MARCAS_CARRUSEL === 'undefined') return;
@@ -113,7 +117,10 @@ function initCatalogUI() {
     const agotados = VISIBLE_PRODUCTS.filter(p => (parseInt(p.stock) || 0) <= 0).length;
     renderBrandMarquee();
     renderHeroNuevos();
-    document.getElementById('search').addEventListener('input', applyFilters);
+    document.getElementById('search').addEventListener('input', (e) => {
+      if (e.target.value.trim().toLowerCase() === CLAVE_TIMBRABLES) { showTimbrables(); return; }
+      applyFilters();
+    });
     document.getElementById('brandFilter').addEventListener('change', () => { diaNinoMode = false; document.getElementById('diaNinoBanner').style.display = 'none'; applyFilters(); });
     document.getElementById('loadMoreBtn').addEventListener('click', () => renderPage(false));
     document.getElementById('genBtn').addEventListener('click', openCustomerModal);

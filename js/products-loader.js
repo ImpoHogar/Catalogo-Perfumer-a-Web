@@ -19,6 +19,11 @@
 
 const PRODUCTOS_PAGE_SIZE = 1000;
 
+// Codigos de barras de los articulos "timbrables" (subcatalogo secreto).
+// Viene de la tabla ajustes_catalogo (clave "timbrables"). Si no existe
+// o falla la carga, queda vacia y el catalogo funciona igual que siempre.
+let TIMBRABLES_CODES = [];
+
 // Convierte una fila de Supabase (snake_case) al formato que usa el
 // resto del catalogo (camelCase), igual que los objetos que antes
 // venian de js/products.js.
@@ -90,6 +95,8 @@ async function fetchAjustes() {
         MARCAS_CARRUSEL = row.valor;
       } else if (row.clave === 'vendedores' && row.valor && typeof row.valor === 'object') {
         SELLERS = row.valor;
+      } else if (row.clave === 'timbrables' && Array.isArray(row.valor)) {
+        TIMBRABLES_CODES = row.valor;
       }
     });
   } catch (err) {
