@@ -17,7 +17,7 @@ const SUPABASE_ANON_KEY = "sb_publishable_5eCDbAxlk-Q6nreXo0dhgQ_Gjq7pY0s";
 
 // Sube esta fecha cada vez que reemplaces fotos de la carpeta img/,
 // para que el navegador de los clientes no sirva la imagen vieja.
-const IMG_VERSION = "20260923";
+const IMG_VERSION = "20261026";
 
 // Marcas que aparecen en el carrusel animado de arriba del catalogo
 // (reemplaza al aviso de "fotos cargadas / agotados"). Cada logo debe
