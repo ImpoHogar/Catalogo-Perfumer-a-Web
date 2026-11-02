@@ -530,7 +530,7 @@ async function toggleAdminProductEdit(id) {
     if (!p) { wrap.innerHTML = '<p class="admin-msg is-error">No encontrado.</p>'; return; }
     wrap.innerHTML = productEditFormHtml(p);
   } catch (err) {
-    wrap.innerHTML = `<p class="admin-msg is-error">Error: ${err.message}</p>`;
+    wrap.innerHTML = `<p class="admin-msg is-error">Error: ${escapeAdminHtml(err.message)}</p>`;
   }
 }
 
@@ -854,7 +854,7 @@ async function toggleAdminClientEdit(codigo) {
     if (!c) { wrap.innerHTML = '<p class="admin-msg is-error">No encontrado.</p>'; return; }
     wrap.innerHTML = clientEditFormHtml(c);
   } catch (err) {
-    wrap.innerHTML = `<p class="admin-msg is-error">Error: ${err.message}</p>`;
+    wrap.innerHTML = `<p class="admin-msg is-error">Error: ${escapeAdminHtml(err.message)}</p>`;
   }
 }
 

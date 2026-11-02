@@ -20,10 +20,22 @@ const CLAVE_TIMBRABLES = 'timbrado26';
 function renderBrandMarquee() {
   const track = document.getElementById('brandMarqueeTrack');
   if (!track || typeof MARCAS_CARRUSEL === 'undefined') return;
-  const logosHTML = MARCAS_CARRUSEL.map(m =>
-    `<img src="img/marcas/${m.archivo}?v=${IMG_VERSION}" alt="${m.nombre}" class="brand-logo-item">`
-  ).join('');
-  track.innerHTML = logosHTML + logosHTML;
+  // SEGURIDAD: la lista de marcas viene de la base de datos, asi que NO se
+  // arma con innerHTML. Cada logo se crea como elemento y el nombre del
+  // archivo se valida (solo letras, numeros, guion, punto y extension de imagen).
+  const archivoValido = /^[\w\-]+\.(png|webp|jpg|jpeg|svg)$/i;
+  track.textContent = '';
+  const logos = [];
+  (Array.isArray(MARCAS_CARRUSEL) ? MARCAS_CARRUSEL : []).forEach(m => {
+    if (!m || typeof m.archivo !== 'string' || !archivoValido.test(m.archivo)) return;
+    const img = document.createElement('img');
+    img.src = 'img/marcas/' + m.archivo + '?v=' + encodeURIComponent(IMG_VERSION);
+    img.alt = String(m.nombre == null ? '' : m.nombre);
+    img.className = 'brand-logo-item';
+    logos.push(img);
+  });
+  logos.forEach(img => track.appendChild(img));
+  logos.forEach(img => track.appendChild(img.cloneNode(true)));
 }
 
 // ============================================================
@@ -136,6 +148,6 @@ function initCatalogUI() {
     initHeaderScroll();
   } catch (err) {
     console.error(err);
-    document.getElementById('count').textContent = 'Error cargando catálogo: ' + err.message;
+    document.getElementById('count').textContent = 'No se pudo cargar el catálogo. Intenta recargar la página.';
   }
 }

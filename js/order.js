@@ -161,7 +161,7 @@ async function generateExcel() {
     showThankYouModal();
   } catch (err) {
     console.error(err);
-    setStatus('Error al generar: ' + err.message, true);
+    setStatus('No se pudo generar el pedido. Intenta de nuevo.', true);
   }
 }
 
@@ -241,6 +241,16 @@ function hideThankYouModal() {
 // Icono de WhatsApp reutilizado para cada vendedor del modal.
 const SELLER_WA_ICON_SVG = '<svg class="seller-wa" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.4A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.4-.7-1.6-.8-.2-.1-.4-.1-.6.1-.2.2-.6.8-.8.9-.1.2-.3.2-.5.1-.2-.1-1.1-.4-2-1.3-.7-.7-1.2-1.5-1.4-1.7-.1-.2 0-.4.1-.5l.4-.4c.1-.1.2-.3.2-.4.1-.1 0-.3 0-.4-.1-.1-.6-1.4-.8-1.9-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.4.1-.6.3-.2.2-.8.8-.8 2s.8 2.4 1 2.5c.1.2 1.8 2.8 4.4 3.9.6.3 1.1.4 1.5.5.6.2 1.2.2 1.6.1.5-.1 1.4-.6 1.6-1.1.2-.5.2-1 .1-1.1-.1-.1-.2-.2-.4-.3z"/></svg>';
 
+// SEGURIDAD: los vendedores vienen de la base de datos; todo lo que se
+// muestra se limpia y el telefono se deja solo con numeros.
+function escapeSellerHtml(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+function sellerPhoneDigits(phone) {
+  return String(phone || '').replace(/\D/g, '').slice(0, 15);
+}
+
 function sellerInitials(name) {
   return (name || '').trim().split(/\s+/).slice(0, 2).map(w => w[0] || '').join('').toUpperCase();
 }
@@ -268,7 +278,7 @@ function renderSellerModal() {
   // sin a quien mandarle el pedido.
   let lista = (typeof SELLERS !== 'undefined' && SELLERS && typeof SELLERS === 'object') ? SELLERS : {};
   if (!Object.keys(lista).length && typeof SELLERS_RESPALDO !== 'undefined') lista = SELLERS_RESPALDO;
-  const keys = Object.keys(lista).filter(k => lista[k] && lista[k].name && lista[k].phone);
+  const keys = Object.keys(lista).filter(k => lista[k] && lista[k].name && sellerPhoneDigits(lista[k].phone).length >= 8);
   if (!keys.length) {
     list.innerHTML = '<p style="font-size:13px; color:var(--muted);">No hay vendedores configurados. Avísale a ImpoHogar para que los agregue desde el panel.</p>';
     return;
@@ -276,9 +286,9 @@ function renderSellerModal() {
   list.innerHTML = keys.map(key => {
     const s = lista[key];
     return `
-      <button type="button" class="seller-option" onclick="sendToSeller('${key}')">
-        <span class="seller-avatar">${sellerInitials(s.name)}</span>
-        <span class="seller-text"><b>${s.name}</b><span>${sellerFormattedPhone(s.phone)}</span></span>
+      <button type="button" class="seller-option" data-seller-key="${escapeSellerHtml(key)}" onclick="sendToSeller(this.dataset.sellerKey)">
+        <span class="seller-avatar">${escapeSellerHtml(sellerInitials(s.name))}</span>
+        <span class="seller-text"><b>${escapeSellerHtml(s.name)}</b><span>${escapeSellerHtml(sellerFormattedPhone(sellerPhoneDigits(s.phone)))}</span></span>
         ${SELLER_WA_ICON_SVG}
       </button>
     `;
@@ -299,11 +309,13 @@ function closeSellerModal() {
 
 function sendToSeller(key) {
   let lista = (typeof SELLERS !== 'undefined' && SELLERS && Object.keys(SELLERS).length) ? SELLERS : (typeof SELLERS_RESPALDO !== 'undefined' ? SELLERS_RESPALDO : {});
-  const seller = lista[key];
+  const seller = Object.prototype.hasOwnProperty.call(lista, key) ? lista[key] : null;
   if (!seller) return;
+  const phone = sellerPhoneDigits(seller.phone);
+  if (phone.length < 8) return;
   const s = lastOrderSummary;
   const message = `Buenas, mi nombre es ${s.name || ''}, este es mi pedido.`;
-  const url = `https://wa.me/${seller.phone}?text=${encodeURIComponent(message)}`;
-  window.open(url, '_blank');
+  const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+  window.open(url, '_blank', 'noopener');
   closeSellerModal();
 }
